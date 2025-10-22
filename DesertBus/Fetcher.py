@@ -1,0 +1,136 @@
+#!/usr/bin/python3
+
+from dataclasses import dataclass, field
+from datetime import datetime
+import time
+import json
+import urllib.request
+from urllib.error import HTTPError
+import DesertBus.DonationConverter as DonationConverter
+
+_URL_PREFIX = 'https://vst.ninja/'
+_IS_OMEGA_URL = f'{_URL_PREFIX}Resources/isitomegashift.html'
+
+# Field names are mostly tentative.
+_JSON_ODOMETER = 'Current Mileage'
+_JSON_POINTS = 'Points: Total'
+_JSON_CRASHES = 'Crashes: Total'
+_JSON_SPLATS = 'Bug Splats: Total'
+_JSON_STOPS = 'Bus Stops: Total'
+_JSON_IS_LIVE = 'Run Live'
+_JSON_DONATIONS = 'Total Raised'
+
+_YEAR_OFFSET = 2006
+# Floats should be okay here, unless Python has issues with the hundredths digit.
+# It might, you never know.
+_ODOMETER_OFFSET = 70109.3
+_MILES_TO_VEGAS = 360
+
+@dataclass(frozen=True)
+class VstData:
+    """The various data useful for display.  NOT just the raw API JSON blob. """
+
+    # The time (millis since the epoch) this data was fetched.
+    time_fetched: int = 0
+
+    # The current donation total.
+    donation_total: float = 0.0
+    # Amount needed to reach the next hour.
+    to_next_hour: float = 0.0
+
+    # Hours bussed (as a whole number; see minutes_bussed).
+    hours_bussed: int = 0
+    # Minutes bussed within the current hour; will be 0-59.
+    minutes_bussed: int = 0
+    # Total hours that will be bussed, given current donations.
+    total_hours: int = 0
+
+    # Current bus odometer reading.
+    odometer: float = 70109.3
+
+    # Points scored this run.
+    points: int = 0
+    # Crashes experienced this run.
+    crashes: int = 0
+    # Bugs splatted this run.
+    splats: int = 0
+    # Successful bus stops this run.
+    stops: int = 0
+
+    # True if Desert Bus for Hope is currently live, False if the event is over
+    # for the year.
+    is_live: bool = False
+    # True if Omega Shift is live, False if not, None if there was an error
+    # fetching it (likely meaning we just retain the previous value).
+    is_omega_shift: bool = False
+    # True if the bus is en route to Tucson, False if the bus is en route to
+    # Las Vegas.
+    is_going_to_tucson: bool = False
+
+
+def _make_stats_url_for_year(year):
+    numbered_run = year - _YEAR_OFFSET
+    return f'{_URL_PREFIX}DB{numbered_run}/data/DB{numbered_run}_stats.json'
+
+def get_current_stats() -> VstData:
+    """Fetches the current stats from the VST."""
+    # First, try for this year.
+    year = datetime.now().year
+    json_data = None
+
+    try:
+        with urllib.request.urlopen(_make_stats_url_for_year(year)) as response:
+            json_data = json.loads(response.read())
+    except HTTPError as e:
+        if e.code == 404:
+            # Whoops, it doesn't exist yet.  Back off a year.  If THIS doesn't
+            # work, then we throw.
+            with urllib.request.urlopen(_make_stats_url_for_year(year - 1)) as response:
+                json_data = json.loads(response.read())
+
+    # Also, check if it's omega or not.
+    omega = None
+    try:
+        with urllib.request.urlopen(_IS_OMEGA_URL) as response:
+            # The Omega response should ONLY be a 0 or 1.  If it's neither, keep
+            # the response as None so the caller knows not to do anything with
+            # it.
+            omega_response = int(response.read())
+            if omega_response == 0:
+                omega = False
+            elif omega_response == 1:
+                omega = True
+    except:
+        # If there's any sort of exception, just let it fly; the omega variable
+        # will stay as None.
+        pass
+
+    # Now we've got data!  Let's get it parsed!  Make it its own method to keep
+    # things tidy and well-organized.
+    return _parse_stats(json_data[0], omega)
+
+def _parse_stats(json_blob, omega: bool) -> VstData:
+    """Parses the raw VST results into a VstData object."""
+    # There isn't much processing we need to do, but there IS something.
+    miles_total = float(json_blob.get(_JSON_ODOMETER, 0.0))
+    miles_driven = miles_total - _ODOMETER_OFFSET
+    trips_taken = miles_driven // _MILES_TO_VEGAS
+    is_going_to_tucson = False
+    if trips_taken >= 0 and trips_taken % 2 == 1:
+        is_going_to_tucson = True
+
+    donation_total = float(json_blob.get(_JSON_DONATIONS, 0.0))
+    to_next_hour = DonationConverter.to_next_hour_from_donation_amount(donation_total)
+
+    return VstData(time_fetched = round(time.time() * 1000),
+                   donation_total = float(json_blob.get(_JSON_DONATIONS, 0.0)),
+                   to_next_hour = to_next_hour,
+                   odometer = miles_total,
+                   points = json_blob.get(_JSON_POINTS, 0),
+                   crashes = json_blob.get(_JSON_CRASHES, 0),
+                   splats = json_blob.get(_JSON_SPLATS, 0),
+                   stops = json_blob.get(_JSON_STOPS, 0),
+                   is_live = bool(json_blob.get(_JSON_IS_LIVE, False)),
+                   is_omega_shift = omega,
+                   is_going_to_tucson = is_going_to_tucson)
+
