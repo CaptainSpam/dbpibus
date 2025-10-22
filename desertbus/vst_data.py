@@ -1,0 +1,43 @@
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class VstData:
+    """The various data useful for display.  NOT just the raw API JSON blob. """
+
+    # The time (millis since the epoch) this data was fetched.
+    time_fetched: int = 0
+
+    # The current donation total.
+    donation_total: float = 0.0
+    # Amount needed to reach the next hour.
+    to_next_hour: float = 0.0
+
+    # Hours bussed (as a whole number; see minutes_bussed).
+    hours_bussed: int = 0
+    # Minutes bussed within the current hour; will be 0-59.
+    minutes_bussed: int = 0
+    # Total hours that will be bussed, given current donations.
+    total_hours: int = 0
+
+    # Current bus odometer reading.
+    odometer: float = 70109.3
+
+    # Points scored this run.
+    points: int = 0
+    # Crashes experienced this run.
+    crashes: int = 0
+    # Bugs splatted this run.
+    splats: int = 0
+    # Successful bus stops this run.
+    stops: int = 0
+
+    # True if Desert Bus for Hope is currently live, False if the event is over
+    # for the year.
+    is_live: bool = False
+    # True if Omega Shift is live, False if not, None if there was an error
+    # fetching it (likely meaning we just retain the previous value).
+    is_omega_shift: bool = False
+    # True if the bus is en route to Tucson, False if the bus is en route to
+    # Las Vegas.
+    is_going_to_tucson: bool = False
+
