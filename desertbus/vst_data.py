@@ -1,4 +1,12 @@
 from dataclasses import dataclass
+from enum import Enum, auto
+
+class Shift(Enum):
+    DAWN_GUARD = auto()
+    ALPHA_FLIGHT = auto()
+    NIGHT_WATCH = auto()
+    ZETA_SHIFT = auto()
+    OMEGA_SHIFT = auto()
 
 @dataclass(frozen=True)
 class VstData:
@@ -30,6 +38,9 @@ class VstData:
     splats: int = 0
     # Successful bus stops this run.
     stops: int = 0
+
+    # The current shift.  Useful for light shows and transition animations.
+    current_shift: Shift = Shift.DAWN_GUARD
 
     # True if Desert Bus for Hope is currently live, False if the event is over
     # for the year.

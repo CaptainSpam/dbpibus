@@ -6,8 +6,10 @@ import time
 import json
 import urllib.request
 from urllib.error import HTTPError
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from desertbus import donation_converter
-from desertbus.vst_data import VstData
+from desertbus.vst_data import VstData, Shift
 
 _URL_PREFIX = 'https://vst.ninja/'
 _IS_OMEGA_URL = f'{_URL_PREFIX}Resources/isitomegashift.html'
@@ -29,6 +31,7 @@ _ODOMETER_OFFSET = 70109.3
 _MILES_TO_VEGAS = 360
 _MILLIS_PER_MINUTE = 1000 * 60
 _MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
+_PACIFIC_ZONEINFO = ZoneInfo('America/Los_Angeles')
 
 def _make_stats_url_for_year(year):
     numbered_run = year - _YEAR_OFFSET
@@ -71,6 +74,17 @@ def get_current_stats() -> VstData:
     # things tidy and well-organized.
     return _parse_stats(json_data[0], omega)
 
+def _get_current_shift() -> Shift:
+    # It's up to the caller to not call this if omega is live.
+    right_now = datetime.now(_PACIFIC_ZONEINFO)
+    if right_now.hour >=0 and right_now.hour < 6:
+        return Shift.ZETA_SHIFT
+    if right_now.hour >=6 and right_now.hour < 12:
+        return Shift.DAWN_GUARD
+    if right_now.hour >=12 and right_now.hour < 18:
+        return Shift.ALPHA_FLIGHT
+    return Shift.NIGHT_WATCH
+
 def _parse_stats(json_blob, omega: bool) -> VstData:
     """Parses the raw VST results into a VstData object."""
     # There isn't much processing we need to do, but there IS something.
@@ -90,6 +104,12 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
     to_next_hour = donation_converter.to_next_hour_from_donation_amount(donation_total)
     total_hours = donation_converter.total_hours_for_donation_amount(donation_total)
 
+    current_shift = None
+    if omega:
+        current_shift = Shift.OMEGA_SHIFT
+    else:
+        current_shift = _get_current_shift()
+
     return VstData(time_fetched = right_now_millis,
                    donation_total = float(json_blob.get(_JSON_DONATIONS, 0.0)),
                    hours_bussed = hours_bussed,
@@ -101,6 +121,7 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
                    crashes = json_blob.get(_JSON_CRASHES, 0),
                    splats = json_blob.get(_JSON_SPLATS, 0),
                    stops = json_blob.get(_JSON_STOPS, 0),
+                   current_shift = current_shift,
                    is_live = bool(json_blob.get(_JSON_IS_LIVE, False)),
                    is_omega_shift = omega,
                    is_going_to_tucson = is_going_to_tucson)
