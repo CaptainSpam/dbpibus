@@ -6,7 +6,7 @@ import time
 import json
 import urllib.request
 from urllib.error import HTTPError
-import DesertBus.DonationConverter as DonationConverter
+from DesertBus import DonationConverter
 
 _URL_PREFIX = 'https://vst.ninja/'
 _IS_OMEGA_URL = f'{_URL_PREFIX}Resources/isitomegashift.html'
@@ -19,12 +19,15 @@ _JSON_SPLATS = 'Bug Splats: Total'
 _JSON_STOPS = 'Bus Stops: Total'
 _JSON_IS_LIVE = 'Run Live'
 _JSON_DONATIONS = 'Total Raised'
+_JSON_RUN_START_TIME = 'Year Start UNIX-Time'
 
 _YEAR_OFFSET = 2006
 # Floats should be okay here, unless Python has issues with the hundredths digit.
 # It might, you never know.
 _ODOMETER_OFFSET = 70109.3
 _MILES_TO_VEGAS = 360
+_MILLIS_PER_MINUTE = 1000 * 60
+_MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
 
 @dataclass(frozen=True)
 class VstData:
@@ -119,12 +122,21 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
     if trips_taken >= 0 and trips_taken % 2 == 1:
         is_going_to_tucson = True
 
+    start_time_millis = json_blob.get(_JSON_RUN_START_TIME, 0) * 1000
+    right_now_millis = round(time.time() * 1000)
+    hours_bussed = (right_now_millis - start_time_millis) // _MILLIS_PER_HOUR
+    minutes_bussed = ((right_now_millis - start_time_millis) % _MILLIS_PER_HOUR) // _MILLIS_PER_MINUTE
+
     donation_total = float(json_blob.get(_JSON_DONATIONS, 0.0))
     to_next_hour = DonationConverter.to_next_hour_from_donation_amount(donation_total)
+    total_hours = DonationConverter.total_hours_for_donation_amount(donation_total)
 
-    return VstData(time_fetched = round(time.time() * 1000),
+    return VstData(time_fetched = right_now_millis,
                    donation_total = float(json_blob.get(_JSON_DONATIONS, 0.0)),
+                   hours_bussed = hours_bussed,
+                   minutes_bussed = minutes_bussed,
                    to_next_hour = to_next_hour,
+                   total_hours = total_hours,
                    odometer = miles_total,
                    points = json_blob.get(_JSON_POINTS, 0),
                    crashes = json_blob.get(_JSON_CRASHES, 0),
