@@ -1,14 +1,7 @@
 #!/usr/bin/env python3
 
 from dataclasses import dataclass
-from enum import Enum, auto
-
-class Shift(Enum):
-    DAWN_GUARD = auto()
-    ALPHA_FLIGHT = auto()
-    NIGHT_WATCH = auto()
-    ZETA_SHIFT = auto()
-    OMEGA_SHIFT = auto()
+from desertbus.shift_data import Shift
 
 @dataclass(frozen=True)
 class VstData:
