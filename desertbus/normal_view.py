@@ -40,6 +40,11 @@ _PAGES = [
 ]
 
 _TOTAL_PAGES = len(_PAGES)
+_SERVICE_DOT_MILLIS = 120000
+
+def _needs_service_dot(data: VstData) -> bool:
+    time_since_last = (time.time() * 1000) - data.time_fetched
+    return time_since_last > _SERVICE_DOT_MILLIS
 
 class NormalView(BaseView):
     """The NormalView, NormalView, NormalView, NORMALVIEEEEEEEEEEEEEW!!! is the
@@ -67,7 +72,7 @@ class NormalView(BaseView):
         # Determine what page we're on based on elapsed time.
         current_page = int(((time.time() - self._start_time) // 4) % _TOTAL_PAGES)
         line1 = _PAGES[current_page](data).center(16)
-        line2 = f"${data.donation_total:,.2f}".center(16)
+        line2 = f"${data.donation_total:,.2f}{'.' if _needs_service_dot(data) else ''}".center(16)
         self._display_text(line1, line2)
 
         # We don't use the frame timer, but still, advance it.
