@@ -15,7 +15,7 @@ def _to_next_hour_page(data: VstData) -> str:
     return f"Next: ${data.to_next_hour:,.2f}"
 
 def _hours_bussed_page(data: VstData) -> str:
-    return f"Bussed: {data.hours_bussed}:{data.minutes_bussed}"
+    return f"Bussed: {data.hours_bussed}:{data.minutes_bussed:02}"
 
 def _total_hours_page(data: VstData) -> str:
     return f"Total hours: {data.total_hours}"
