@@ -7,9 +7,9 @@ import adafruit_character_lcd.character_lcd as characterlcd
 
 def _route_page(data: VstData) -> str:
     if data.is_going_to_tucson:
-        return "Tucson -> Vegas"
-    else:
         return "Vegas -> Tucson"
+    else:
+        return "Tucson -> Vegas"
 
 def _to_next_hour_page(data: VstData) -> str:
     return f"Next: ${data.to_next_hour:,.2f}"
