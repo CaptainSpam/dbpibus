@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+import logging
 from threading import Thread, Lock
 import time
 from desertbus import fetcher
+
+logger = logging.getLogger(__name__)
 
 class FetcherThread(Thread):
     """The main VST data-fetching thread.  This is intended to be kicked off as
@@ -26,9 +29,11 @@ class FetcherThread(Thread):
         return to_return
 
     def run(self):
+        logger.info('The fetcher thread is going live!')
         while True:
             try:
                 results = fetcher.get_current_stats()
+                logger.debug(f'Fetched stats: {results}')
 
                 if results is not None:
                     # Since we're the only ones writing to this, we really,
@@ -38,8 +43,8 @@ class FetcherThread(Thread):
                     self._lock.release()
             except Exception as e:
                 # Wuh oh.
-                # TODO: Maybe swap this for some proper logging sort of thing?
-                print(f'fetcher_thread: FETCHING EXCEPTION!  {type(e)}: {e.args}')
+                logger.exception('Fetching exception!')
 
+            logger.debug('Sleeping for 30 seconds...')
             time.sleep(30)
 

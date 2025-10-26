@@ -3,11 +3,14 @@
 import time
 import json
 import urllib.request
+import logging
 from urllib.error import HTTPError
 from datetime import datetime
 from desertbus import donation_converter
 from desertbus.vst_data import VstData
 from desertbus.shift_data import Shift, get_current_shift
+
+logger = logging.getLogger(__name__)
 
 _URL_PREFIX = 'https://vst.ninja/'
 _IS_OMEGA_URL = f'{_URL_PREFIX}Resources/isitomegashift.html'
@@ -41,18 +44,21 @@ def get_current_stats() -> VstData:
     json_data = None
 
     try:
+        logger.debug(f'Fetching data for {year}...')
         with urllib.request.urlopen(_make_stats_url_for_year(year)) as response:
             json_data = json.loads(response.read())
     except HTTPError as e:
         if e.code == 404:
             # Whoops, it doesn't exist yet.  Back off a year.  If THIS doesn't
             # work, then we throw.
+            logger.debug(f'{year} has no data yet, trying again with {year - 1}...')
             with urllib.request.urlopen(_make_stats_url_for_year(year - 1)) as response:
                 json_data = json.loads(response.read())
 
     # Also, check if it's omega or not.
     omega = None
     try:
+        logger.debug('Checking if Omega Shift is live...')
         with urllib.request.urlopen(_IS_OMEGA_URL) as response:
             # The Omega response should ONLY be a 0 or 1.  If it's neither, keep
             # the response as None so the caller knows not to do anything with
@@ -65,7 +71,7 @@ def get_current_stats() -> VstData:
     except:
         # If there's any sort of exception, just let it fly; the omega variable
         # will stay as None.
-        pass
+        logger.exception('Something went wrong fetching the Omega Shift flag!')
 
     # Now we've got data!  Let's get it parsed!  Make it its own method to keep
     # things tidy and well-organized.
@@ -73,6 +79,7 @@ def get_current_stats() -> VstData:
 
 def _parse_stats(json_blob, omega: bool) -> VstData:
     """Parses the raw VST results into a VstData object."""
+    logger.debug(f'Parsing data blob: {json_blob}')
     # There isn't much processing we need to do, but there IS something.
     miles_total = float(json_blob.get(_JSON_ODOMETER, 0.0))
     miles_driven = miles_total - _ODOMETER_OFFSET
