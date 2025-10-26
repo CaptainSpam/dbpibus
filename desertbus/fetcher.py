@@ -54,6 +54,9 @@ def get_current_stats() -> VstData:
             logger.debug(f'{year} has no data yet, trying again with {year - 1}...')
             with urllib.request.urlopen(_make_stats_url_for_year(year - 1)) as response:
                 json_data = json.loads(response.read())
+        else:
+            # Any other error, we throw it back.
+            raise e
 
     # Also, check if it's omega or not.
     omega = None
