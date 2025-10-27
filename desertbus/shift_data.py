@@ -39,3 +39,33 @@ def get_current_shift() -> Shift:
         return Shift.ALPHA_FLIGHT
     return Shift.NIGHT_WATCH
 
+# Shift animation sequences.
+ZETA_SHIFT_ANIM = [
+    (100, "L".center(16),"                "),
+    (100, "LL".center(16),"                "),
+    (100, "LLL".center(16),"                "),
+    (100, "LLLL".center(16),"                "),
+    (100, "LLLLL".center(16),"                "),
+    (100, "LLLLLL".center(16),"                "),
+    (100, "LLLLLLL".center(16),"                "),
+    (100, "LLLLLLLL".center(16),"                "),
+    (100, "LLLLLLLLL".center(16),"                "),
+    (350, "LET'S           ","                "),
+    (350, "LET'S GET       ","                "),
+    (350, "LET'S GET READY ","                "),
+    (200 ,"LET'S GET READY ","  TO            "),
+    (1500,"LET'S GET READY ","  TO RUMBLE!!!  "),
+    (500, "ZETA            ","            ZETA"),
+    (500, "    ZETA        ","        ZETA    "),
+    (500, "        ZETA    ","    ZETA        "),
+    (500, "            ZETA","ZETA            "),
+    (100,  "ZETA            ","                "),
+    (100,  "                ","    ZETA        "),
+    (100,  "        ZETA    ","                "),
+    (100,  "                ","            ZETA"),
+    (100,  "                ","ZETA            "),
+    (100,  "    ZETA        ","                "),
+    (100,  "                ","        ZETA    "),
+    (100,  "            ZETA","                "),
+    (5000,"ZETA SHIFT".center(16),"                "),
+]
