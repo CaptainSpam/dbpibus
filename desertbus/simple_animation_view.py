@@ -87,7 +87,7 @@ class SimpleAnimationView(BaseView):
         self._display_text(current_frame[1], current_frame[2])
         return False
 
-    def next_frame(self, any) -> bool:
+    def next_frame(self, data: any) -> bool:
         if self._anim_deque is None:
             self._anim_deque = self._prepare_animation(self._anim_sequence)
 
