@@ -106,6 +106,7 @@ while True:
 
         if views[0].next_frame(latest_stats):
             # This view just finished up, so pop it away.
-            logger.info(f'View {views[0].__class__.__name__} complete, removing from queue...')
+            logger.info(f'View {views[0].name} complete, removing from queue...')
             heapq.heappop(views)
+
     sleep(0.05)

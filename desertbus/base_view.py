@@ -72,6 +72,11 @@ class BaseView(ABC):
         """The view's priority.  Lower numbers mean higher priority."""
         pass
 
+    @property
+    def name(self):
+        """The name of the view, suitable for the logger."""
+        return self.__class__.__name__
+
     def _advance_frame_time(self):
         """Advances the frame.  Which just means update the most recent frame
         timestamp."""
