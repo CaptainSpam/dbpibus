@@ -14,6 +14,7 @@ import pwmio
 import time
 from time import sleep
 import os
+import heapq
 import logging
 from logging.handlers import RotatingFileHandler
 from desertbus.normal_view import NormalView
@@ -52,7 +53,7 @@ red = pwmio.PWMOut(board.D21)
 green = pwmio.PWMOut(board.D12)
 blue = pwmio.PWMOut(board.D18)
 
-# Our precious LCD object.  Take care of it.
+# Our precious LCD object.  Take good care of it.
 lcd = characterlcd.Character_LCD_RGB(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6,
                                       lcd_d7, lcd_columns, lcd_rows, red, green, blue)
 
@@ -66,8 +67,9 @@ lcd.color = SCREEN_COLORS[current_shift]
 # And a starter message until the data comes in.
 lcd.message = "Your driver is:".center(16) + "\n" + "JOCKO".center(16)
 
-# Here's our view!
-view = NormalView(lcd)
+# Our view queue.  Or, well, heap.  I know it looks like a list now, but trust
+# me, it'll be a queue.  Heap.  Heapy queue.
+views = []
 
 # Kick the thread into action.
 t = FetcherThread('FetcherThread')
@@ -97,5 +99,13 @@ while True:
         current_shift = now_shift
         lcd.color = SCREEN_COLORS[current_shift]
     if latest_stats is not None:
-        view.next_frame(latest_stats)
+        if len(views) == 0:
+            # If this is the first pass or if NormalView somehow got removed
+            # from the queue, put a new NormalView in.
+            heapq.heappush(views, NormalView(lcd))
+
+        if views[0].next_frame(latest_stats):
+            # This view just finished up, so pop it away.
+            logger.info(f'View {views[0].__class__.__name__} complete, removing from queue...')
+            heapq.heappop(views)
     sleep(0.05)
