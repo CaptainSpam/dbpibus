@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+# Desert Bus for Hope Home Verisimilator Project
+# (aka dbpibus)
+# (c)2025 Nicholas Killewald
+# Distributed under the terms of the MIT License.
+# A "LICENSE" file is included in the top level of the source distribution.
+
 from datetime import datetime
 import board
 import digitalio
