@@ -22,7 +22,7 @@ class Shift(Enum):
 SCREEN_COLORS = {
     Shift.DAWN_GUARD: [80, 10, 0],
     Shift.ALPHA_FLIGHT: [95, 0, 0],
-    Shift.NIGHT_WATCH: [0, 0, 90],
+    Shift.NIGHT_WATCH: [20, 20, 90],
     Shift.ZETA_SHIFT: [80, 0, 80],
     Shift.OMEGA_SHIFT: [40, 40, 40],
 }
