@@ -117,6 +117,59 @@ DAWN_GUARD_ANIM = [
     (5000,"   DAWN GUARD   ","                "),
 ]
 
+ALPHA_FLIGHT_ANIM = [
+    (1000,"  Caw!          ","                "),
+    (800, "  Caw!          ","           Caw! "),
+    (600, "  Caw!  Caw!    ","           Caw! "),
+    (400, "  Caw!  Caw!    ","Caw!       Caw! "),
+    (200, "  Caw!  Caw!    ","Caw!  Caw! Caw! "),
+    (100, "  Caw!  Caw!Caw!","Caw!  Caw! Caw! "),
+    (75,  "  Caw!  Caw!Caw!","CawCaw!aw! Caw! "),
+    (75,  "Caw!w!  Caw!Caw!","CawCaw!aw! Caw! "),
+    (75,  "Caw!w!  Caw!Caw!","CawCaw!aw! CCaw!"),
+    (75,  "Caw!w!  CaCaw!w!","CawCaw!aw! CCaw!"),
+    (75,  "Caw!w!  CaCaw!w!","CawCaw!aCaw!Caw!"),
+    (75,  "Caw!wCaw!aCaw!w!","CawCaw!aCaw!Caw!"),
+    (75,  "Caw!wCaw!aCaw!w!","CaCaw!!aCaw!Caw!"),
+    (75,  "Caw!wCaCaw!aw!w!","CaCaw!!aCaw!Caw!"),
+    (75,  "Caw!wCaCaw!aw!w!","CaCaCaw!Caw!Caw!"),
+    (75,  "CCaw!CaCaw!aw!w!","CaCaCaw!Caw!Caw!"),
+    (75,  "CCaw!CaCaw!aw!w!","Caw!Caw!Caw!Caw!"),
+    (75,  "CCaw!CaCaCaw!!w!","Caw!Caw!Caw!Caw!"),
+    (75,  "CCaw!CaCaCaw!!w!","CaCaw!w!Caw!Caw!"),
+    (75,  "Caw!!CaCaCaw!!w!","CaCaw!w!Caw!Caw!"),
+    (75,  "Caw!!CaCaCaw!!w!","CaCaw!wCaw!!Caw!"),
+    (75,  "CaCaw!aCaCaw!!w!","CaCaw!wCaw!!Caw!"),
+    (75,  "CaCaw!aCaCaw!!w!","CaCCaw!Caw!!Caw!"),
+    (75,  "CaCaw!Caw!aw!!w!","CaCCaw!Caw!!Caw!"),
+    (2000,"CaCaw!Caw!aw!!w!","CaCCaw!CaCaw!aw!"),
+    (75,  "CaCaw!Caw!aw!!w!","CaCCaw!Caw!!Caw!"),
+    (75,  "CaCaw!aCaCaw!!w!","CaCCaw!Caw!!Caw!"),
+    (75,  "CaCaw!aCaCaw!!w!","CaCaw!wCaw!!Caw!"),
+    (75,  "Caw!!CaCaCaw!!w!","CaCaw!wCaw!!Caw!"),
+    (75,  "Caw!!CaCaCaw!!w!","CaCaw!w!Caw!Caw!"),
+    (75,  "CCaw!CaCaCaw!!w!","CaCaw!w!Caw!Caw!"),
+    (75,  "CCaw!CaCaCaw!!w!","Caw!Caw!Caw!Caw!"),
+    (75,  "CCaw!CaCaw!aw!w!","Caw!Caw!Caw!Caw!"),
+    (75,  "CCaw!CaCaw!aw!w!","CaCaCaw!Caw!Caw!"),
+    (75,  "Caw!wCaCaw!aw!w!","CaCaCaw!Caw!Caw!"),
+    (75,  "Caw!wCaCaw!aw!w!","CaCaw!!aCaw!Caw!"),
+    (75,  "Caw!wCaw!aCaw!w!","CaCaw!!aCaw!Caw!"),
+    (75,  "Caw!wCaw!aCaw!w!","CawCaw!aCaw!Caw!"),
+    (75,  "Caw!w!  CaCaw!w!","CawCaw!aCaw!Caw!"),
+    (75,  "Caw!w!  CaCaw!w!","CawCaw!aw! CCaw!"),
+    (75,  "Caw!w!  Caw!Caw!","CawCaw!aw! CCaw!"),
+    (75,  "Caw!w!  Caw!Caw!","CawCaw!aw! Caw! "),
+    (75,  "  Caw!  Caw!Caw!","CawCaw!aw! Caw! "),
+    (100, "  Caw!  Caw!Caw!","Caw!  Caw! Caw! "),
+    (200, "  Caw!A Caw!HT  ","Caw!  Caw! Caw! "),
+    (350, "  Caw!A Caw!HT  ","Caw!       Caw! "),
+    (450, "  Caw!A Caw!HT  ","           Caw! "),
+    (550, "  Caw!A FLIGHT  ","           Caw! "),
+    (650, "  Caw!A FLIGHT  ","                "),
+    (5000,"  ALPHA FLIGHT  ","                "),
+]
+
 ZETA_SHIFT_ANIM = [
     (75,  "L               ","                "),
     (75,  "LL              ","                "),
@@ -180,12 +233,12 @@ def make_view_for_shift(lcd, shift: Shift) -> SimpleAnimationView:
         case Shift.DAWN_GUARD:
             return SimpleAnimationView(lcd, DAWN_GUARD_ANIM, "Dawn Transition", 5)
         case Shift.ALPHA_FLIGHT:
-            return None
+            return SimpleAnimationView(lcd, ALPHA_FLIGHT_ANIM, "Alpha Transition", 5)
         case Shift.NIGHT_WATCH:
-            return None
-        case Shift.OMEGA_SHIFT:
             return None
         case Shift.ZETA_SHIFT:
             return SimpleAnimationView(lcd, ZETA_SHIFT_ANIM, "Zeta Transition", 5)
+        case Shift.OMEGA_SHIFT:
+            return None
         case _:
             raise ValueError(f"Invalid value passed to make_view_for_shift(): {shift}")
