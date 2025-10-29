@@ -170,6 +170,30 @@ ALPHA_FLIGHT_ANIM = [
     (5000,"  ALPHA FLIGHT  ","                "),
 ]
 
+NIGHT_WATCH_ANIM = [
+    (1000," I, [recruit’s  ", "   name], do    "),
+    (1000," solemnly swear ", " by [recruit’s  "),
+    (900, "deity of choice]", " to uphold the  "),
+    (800, "    Laws and    ", " Ordinances of  "),
+    (700, "  the city of   ", " Ankh-Morpork,  "),
+    (500, "serve the public", "   trust, and   "),
+    (300, "   defend the   ", "  subjects of   "),
+    (100, "His/Her [delete ", "  whichever is  "),
+    (100, " inappropriate] ", "Majesty [name of"),
+    (100, "    reigning    ", "monarch] without"),
+    (100, "fear, favor, or ", "   thought of   "),
+    (100, "personal safety;", "   to pursue    "),
+    (100, " evildoers and  ", "  protect the   "),
+    (100, "innocent, laying", "down my life if "),
+    (100, "necessary in the", " cause of said  "),
+    (100, "duty, so help me", "   [aforesaid   "),
+    (100, "     deity].    ", "                "),
+    (100, " Gods Save the  ", "   King/Queen   "),
+    (100, "    [delete     ", "  whichever is  "),
+    (100, "inappropriate]. ", "                "),
+    (5000,"  NIGHT WATCH   ", "                "),
+]
+
 ZETA_SHIFT_ANIM = [
     (75,  "L               ","                "),
     (75,  "LL              ","                "),
@@ -235,7 +259,7 @@ def make_view_for_shift(lcd, shift: Shift) -> SimpleAnimationView:
         case Shift.ALPHA_FLIGHT:
             return SimpleAnimationView(lcd, ALPHA_FLIGHT_ANIM, "Alpha Transition", 5)
         case Shift.NIGHT_WATCH:
-            return None
+            return SimpleAnimationView(lcd, NIGHT_WATCH_ANIM, "Night Transition", 5)
         case Shift.ZETA_SHIFT:
             return SimpleAnimationView(lcd, ZETA_SHIFT_ANIM, "Zeta Transition", 5)
         case Shift.OMEGA_SHIFT:
