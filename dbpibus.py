@@ -19,7 +19,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from desertbus.normal_view import NormalView
 from desertbus.fetcher_thread import FetcherThread
-from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift
+from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift, make_view_for_shift
 
 # Get a logger going.
 log_file = f"{os.path.expanduser('~')}/dbpibus.log"
@@ -96,8 +96,17 @@ while True:
         now_shift = get_current_shift()
     if not now_shift == current_shift:
         logger.info(f'Shift change!  Changing from {current_shift} to {now_shift}...')
+
+        # Set the screen color first.
+        lcd.color = SCREEN_COLORS[now_shift]
+
+        # Then, ONLY if we're not switching OFF of Omega, do the animation.  It
+        # just wouldn't be right to do a transition coming off of the end of the
+        # run.
+        if not current_shift == Shift.OMEGA_SHIFT:
+            heapq.heappush(views, make_view_for_shift(lcd, now_shift))
+
         current_shift = now_shift
-        lcd.color = SCREEN_COLORS[current_shift]
     if latest_stats is not None:
         if len(views) == 0:
             # If this is the first pass or if NormalView somehow got removed
@@ -109,4 +118,4 @@ while True:
             logger.info(f'View {views[0].name} complete, removing from queue...')
             heapq.heappop(views)
 
-    sleep(0.05)
+    sleep(0.035)
