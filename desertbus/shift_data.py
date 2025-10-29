@@ -251,6 +251,116 @@ ZETA_SHIFT_ANIM = [
     (5000,"   ZETA SHIFT   ", "                "),
 ]
 
+OMEGA_SHIFT_ANIM = [
+    (100, "     O          ","       <>       "),
+    (100, "     O          ","      <<>>      "),
+    (100, "     O          ","     <<<>>>     "),
+    (100, "     O          ","    <<<  >>>    "),
+    (100, "     O          ","   <<<    >>>   "),
+    (100, "     O          ","  <<<      >>>  "),
+    (100, "     O          "," <<<        >>> "),
+    (100, "     O          ","<<<          >>>"),
+    (100, "     O          ","<<            >>"),
+    (100, "     O          ","<              >"),
+    (1000,"     O          ","                "),
+
+    (100, "     OM         ","       <>       "),
+    (100, "     OM         ","      <<>>      "),
+    (100, "     OM         ","     <<<>>>     "),
+    (100, "     OM         ","    <<<  >>>    "),
+    (100, "     OM         ","   <<<    >>>   "),
+    (100, "     OM         ","  <<<      >>>  "),
+    (100, "     OM         "," <<<        >>> "),
+    (100, "     OM         ","<<<          >>>"),
+    (100, "     OM         ","<<            >>"),
+    (100, "     OM         ","<              >"),
+    (1000,"     OM         ","                "),
+
+    (100, "     OME        ","       <>       "),
+    (100, "     OME        ","      <<>>      "),
+    (100, "     OME        ","     <<<>>>     "),
+    (100, "     OME        ","    <<<  >>>    "),
+    (100, "     OME        ","   <<<    >>>   "),
+    (100, "     OME        ","  <<<      >>>  "),
+    (100, "     OME        "," <<<        >>> "),
+    (100, "     OME        ","<<<          >>>"),
+    (100, "     OME        ","<<            >>"),
+    (100, "     OME        ","<              >"),
+    (1000,"     OME        ","                "),
+
+    (100, "     OMEG       ","       <>       "),
+    (100, "     OMEG       ","      <<>>      "),
+    (100, "     OMEG       ","     <<<>>>     "),
+    (100, "     OMEG       ","    <<<  >>>    "),
+    (100, "     OMEG       ","   <<<    >>>   "),
+    (100, "     OMEG       ","  <<<      >>>  "),
+    (100, "     OMEG       "," <<<        >>> "),
+    (100, "     OMEG       ","<<<          >>>"),
+    (100, "     OMEG       ","<<            >>"),
+    (100, "     OMEG       ","<              >"),
+    (1000,"     OMEG       ","                "),
+
+    (100, "     OMEGA      ","       <>       "),
+    (100, "     OMEGA      ","      <<>>      "),
+    (100, "     OMEGA      ","     <<<>>>     "),
+    (100, "     OMEGA      ","    <<<  >>>    "),
+    (100, "     OMEGA      ","   <<<    >>>   "),
+    (100, "     OMEGA      ","  <<<      >>>  "),
+    (100, "     OMEGA      "," <<<        >>> "),
+    (100, "     OMEGA      ","<<<          >>>"),
+    (100, "     OMEGA      ","<<            >>"),
+    (100, "     OMEGA      ","<              >"),
+    (1000,"     OMEGA      ","                "),
+
+    (100, "  OMEGA  SHIFT  ","       <>       "),
+    (100, "  OMEGA  SHIFT  ","      <<>>      "),
+    (100, "  OMEGA  SHIFT  ","     <<<>>>     "),
+    (100, "  OMEGA  SHIFT  ","    <<<  >>>    "),
+    (100, "  OMEGA  SHIFT  ","   <<<    >>>   "),
+    (100, "  OMEGA  SHIFT  ","  <<<      >>>  "),
+    (100, " <OMEGA  SHIFT> "," <<<        >>> "),
+    (100, "<<OMEGA  SHIFT>>","<<<          >>>"),
+    (100, "<<OMEGA  SHIFT>>","<<            >>"),
+    (100, "< OMEGA  SHIFT >","<              >"),
+    (1000,"  OMEGA  SHIFT  ","                "),
+
+    (100, "  OMEGA  SHIFT  ","       <>       "),
+    (100, "  OMEGA  SHIFT  ","      <<>>      "),
+    (100, "  OMEGA  SHIFT  ","     <<<>>>     "),
+    (100, "  OMEGA  SHIFT  ","    <<<  >>>    "),
+    (100, "  OMEGA  SHIFT  ","   <<<    >>>   "),
+    (100, "  OMEGA  SHIFT  ","  <<<      >>>  "),
+    (100, " <OMEGA  SHIFT> "," <<<        >>> "),
+    (100, "<<OMEGA  SHIFT>>","<<<          >>>"),
+    (100, "<<OMEGA  SHIFT>>","<<            >>"),
+    (100, "< OMEGA  SHIFT >","<              >"),
+    (1000,"  OMEGA  SHIFT  ","                "),
+
+    (100, "  OMEGA  SHIFT  ","       <>       "),
+    (100, "  OMEGA  SHIFT  ","      <<>>      "),
+    (100, "  OMEGA  SHIFT  ","     <<<>>>     "),
+    (100, "  OMEGA  SHIFT  ","    <<<  >>>    "),
+    (100, "  OMEGA  SHIFT  ","   <<<    >>>   "),
+    (100, "  OMEGA  SHIFT  ","  <<<      >>>  "),
+    (100, " <OMEGA  SHIFT> "," <<<        >>> "),
+    (100, "<<OMEGA  SHIFT>>","<<<          >>>"),
+    (100, "<<OMEGA  SHIFT>>","<<            >>"),
+    (100, "< OMEGA  SHIFT >","<              >"),
+    (1000,"  OMEGA  SHIFT  ","                "),
+
+    (100, "  OMEGA  SHIFT  ","       <>       "),
+    (100, "  OMEGA  SHIFT  ","      <<>>      "),
+    (100, "  OMEGA  SHIFT  ","     <<<>>>     "),
+    (100, "  OMEGA  SHIFT  ","    <<<  >>>    "),
+    (100, "  OMEGA  SHIFT  ","   <<<    >>>   "),
+    (100, "  OMEGA  SHIFT  ","  <<<      >>>  "),
+    (100, " <OMEGA  SHIFT> "," <<<        >>> "),
+    (100, "<<OMEGA  SHIFT>>","<<<          >>>"),
+    (100, "<<OMEGA  SHIFT>>","<<            >>"),
+    (100, "< OMEGA  SHIFT >","<              >"),
+    (5000,"  OMEGA  SHIFT  ","                "),
+]
+
 def make_view_for_shift(lcd, shift: Shift) -> SimpleAnimationView:
     match(shift):
         # TODO: Implement the rest.
@@ -263,6 +373,6 @@ def make_view_for_shift(lcd, shift: Shift) -> SimpleAnimationView:
         case Shift.ZETA_SHIFT:
             return SimpleAnimationView(lcd, ZETA_SHIFT_ANIM, "Zeta Transition", 5)
         case Shift.OMEGA_SHIFT:
-            return None
+            return SimpleAnimationView(lcd, OMEGA_SHIFT_ANIM, "Omega Transition", 5)
         case _:
             raise ValueError(f"Invalid value passed to make_view_for_shift(): {shift}")
