@@ -39,6 +39,7 @@ _ODOMETER_OFFSET = 70109.3
 _MILES_TO_VEGAS = 360
 _MILLIS_PER_MINUTE = 1000 * 60
 _MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
+_TIMEOUT_SECS = 20
 
 def _make_stats_url_for_year(year):
     numbered_run = year - _YEAR_OFFSET
@@ -52,14 +53,14 @@ def get_current_stats() -> VstData:
 
     try:
         logger.debug(f'Fetching data for {year}...')
-        with urllib.request.urlopen(_make_stats_url_for_year(year)) as response:
+        with urllib.request.urlopen(_make_stats_url_for_year(year), timeout=_TIMEOUT_SECS) as response:
             json_data = json.loads(response.read())
     except HTTPError as e:
         if e.code == 404:
             # Whoops, it doesn't exist yet.  Back off a year.  If THIS doesn't
             # work, then we throw.
             logger.debug(f'{year} has no data yet, trying again with {year - 1}...')
-            with urllib.request.urlopen(_make_stats_url_for_year(year - 1)) as response:
+            with urllib.request.urlopen(_make_stats_url_for_year(year - 1), timeout=_TIMEOUT_SECS) as response:
                 json_data = json.loads(response.read())
         else:
             # Any other error, we throw it back.
@@ -69,7 +70,7 @@ def get_current_stats() -> VstData:
     omega = None
     try:
         logger.debug('Checking if Omega Shift is live...')
-        with urllib.request.urlopen(_IS_OMEGA_URL) as response:
+        with urllib.request.urlopen(_IS_OMEGA_URL, timeout=_TIMEOUT_SECS) as response:
             # The Omega response should ONLY be a 0 or 1.  If it's neither, keep
             # the response as None so the caller knows not to do anything with
             # it.
@@ -85,11 +86,11 @@ def get_current_stats() -> VstData:
 
     # Now we've got data!  Let's get it parsed!  Make it its own method to keep
     # things tidy and well-organized.
+    logger.debug('Fetch complete, parsing now.')
     return _parse_stats(json_data, omega)
 
 def _parse_stats(json_blob, omega: bool) -> VstData:
     """Parses the raw VST results into a VstData object."""
-    logger.debug(f'Parsing data blob: {json_blob}')
     stats = json_blob.get(_JSON_STATS_CATEGORY)
     year_data = stats.get(_JSON_YEAR_DATA_CAGEGORY)
     game_data = stats.get(_JSON_GAME_DATA_CATEGORY)
