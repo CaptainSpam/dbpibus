@@ -5,6 +5,14 @@ import os
 import board
 import digitalio
 from dataclasses import dataclass
+import logging
+
+logger = logging.getLogger(__name__)
+
+_BACK_PIN = board.D26
+_MINUS_PIN = board.D6
+_PLUS_PIN = board.D5
+_SELECT_PIN = board.D16
 
 @dataclass(frozen=True)
 class ButtonData:
@@ -37,20 +45,23 @@ class ButtonHandler:
     _select_button = None
 
     def __init__(self):
+        logger.info('Initializing ButtonHandler!')
+        logger.debug(f'Pins: back={_BACK_PIN}; minus={_MINUS_PIN}; plus={_PLUS_PIN}; select={_SELECT_PIN}')
+
         # Buttons up!
-        self._back_button = digitalio.DigitalInOut(board.D26)
+        self._back_button = digitalio.DigitalInOut(_BACK_PIN)
         self._back_button.direction = digitalio.Direction.INPUT
         self._back_button.pull = digitalio.Pull.UP
 
-        self._minus_button = digitalio.DigitalInOut(board.D6)
+        self._minus_button = digitalio.DigitalInOut(_MINUS_PIN)
         self._minus_button.direction = digitalio.Direction.INPUT
         self._minus_button.pull = digitalio.Pull.UP
 
-        self._plus_button = digitalio.DigitalInOut(board.D5)
+        self._plus_button = digitalio.DigitalInOut(_PLUS_PIN)
         self._plus_button.direction = digitalio.Direction.INPUT
         self._plus_button.pull = digitalio.Pull.UP
 
-        self._select_button = digitalio.DigitalInOut(board.D16)
+        self._select_button = digitalio.DigitalInOut(_SELECT_PIN)
         self._select_button.direction = digitalio.Direction.INPUT
         self._select_button.pull = digitalio.Pull.UP
 
