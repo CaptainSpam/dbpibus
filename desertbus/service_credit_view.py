@@ -42,18 +42,10 @@ class ServiceCreditView(SimpleAnimationView):
             logger.info('Back was pressed, restarting Free Play animation...')
             self._anim_deque = self._prepare_animation(self._generate_animation(data))
             return True
-        if buttons.select and (self._previous_buttons is None or not self._previous_buttons.select):
-            # Alternatively, if Menu/Select is pressed, bail out of the view
-            # right away.
-            logger.info('Select was pressed, clearing anim_deque...')
-            self._anim_deque.clear()
-            return True
-        else:
-            # Otherwise, we don't handle this.  The main loop probably doesn't,
-            # either, given it should already be doing repeat checks to filter
-            # out extraneous backs and selects, and shouldn't do anything with
-            # plus or minus anyway.
-            return False
+
+        # Otherwise, just let SimpleAnimationView handle it, which it will
+        # likely do by just returning True.
+        return super().handle_buttons(data, buttons)
 
     def next_frame(self, data: any) -> bool:
         if self._anim_deque is None:

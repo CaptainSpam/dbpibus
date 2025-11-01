@@ -5,6 +5,7 @@ import logging
 import time
 from collections import deque
 import adafruit_character_lcd.character_lcd as characterlcd
+from desertbus.button_handler import ButtonData
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ class SimpleAnimationView(BaseView):
         self._priority = priority
         self._anim_sequence = anim_sequence
         self._anim_deque = None
+        self._previous_buttons = None
 
     @property
     def priority(self):
@@ -92,6 +94,15 @@ class SimpleAnimationView(BaseView):
         # Display the frame!
         self._display_text(current_frame[1], current_frame[2])
         return False
+
+    def handle_buttons(self, data: any, buttons: ButtonData) -> bool:
+        if buttons.select and (self._previous_buttons is None or not self._previous_buttons.select):
+            # If Menu/Select is pressed, bail out of the view right away.
+            logger.info('Select was pressed, clearing anim_deque...')
+            self._anim_deque.clear()
+
+        # In any case, we just eat the button.
+        return True
 
     def next_frame(self, data: any) -> bool:
         if self._anim_deque is None:
