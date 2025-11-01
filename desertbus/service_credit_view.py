@@ -25,12 +25,12 @@ class ServiceCreditView(SimpleAnimationView):
         free_play_text = f'FREE PLAY{'.' if _needs_service_dot(data) else ''}'.center(16)
         press_start_text = 'PRESS START'.center(16)
         blank_text = '                '
-        
+
         anim_sequence = []
         for i in range(8):
-            anim_sequence.append((600, free_play_text, press_start_text))
-            anim_sequence.append((400, free_play_text, blank_text))
-        
+            anim_sequence.append((300, free_play_text, press_start_text))
+            anim_sequence.append((200, free_play_text, blank_text))
+
         return anim_sequence
 
     def next_frame(self, data: any) -> bool:
