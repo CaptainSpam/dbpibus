@@ -97,7 +97,6 @@ class NormalView(BaseView):
 
         if self._last_stabilized_donations == data.donation_total:
             # We're stabilized; update the counter and return the total.
-            logger.debug(f'Donations stable at ${data.donation_total}.')
             self._last_stabilized_time_millis = right_now_millis
             return data.donation_total
         else:
@@ -118,7 +117,6 @@ class NormalView(BaseView):
                 # We're animating!  Figure out what needs to be displayed.
                 donation_difference = data.donation_total - self._last_stabilized_donations
                 fractional_delta = donation_difference * progress_percent
-                logger.debug(f'Animating from ${self._last_stabilized_donations} to ${data.donation_total}; displaying ${round(self._last_stabilized_donations + fractional_delta, 2)}...')
                 return round(self._last_stabilized_donations + fractional_delta, 2)
 
     def next_frame(self, data: any) -> bool:
