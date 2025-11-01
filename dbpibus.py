@@ -18,8 +18,10 @@ import heapq
 import logging
 from logging.handlers import RotatingFileHandler
 from desertbus.normal_view import NormalView
+from desertbus.service_credit_view import ServiceCreditView
 from desertbus.fetcher_thread import FetcherThread
 from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift, make_view_for_shift
+from desertbus.button_handler import ButtonHandler
 
 # Get a logger going.
 log_file = f"{os.path.expanduser('~')}/dbpibus.log"
@@ -67,6 +69,10 @@ lcd.color = SCREEN_COLORS[current_shift]
 # And a starter message until the data comes in.
 lcd.message = "Your driver is:".center(16) + "\n" + "JOCKO".center(16)
 
+# Ready the buttons!
+button_handler = ButtonHandler()
+previous_buttons = None
+
 # Our view queue.  Or, well, heap.  I know it looks like a list now, but trust
 # me, it'll be a queue.  Heap.  Heapy queue.
 views = []
@@ -113,6 +119,23 @@ while True:
             # from the queue, put a new NormalView in.
             heapq.heappush(views, NormalView(lcd))
 
+        # Handle any buttons first.
+        buttons = button_handler.get_button_state()
+        if not views[0].handle_buttons(latest_stats, buttons):
+            # The view didn't handle it (which is the most common case).  It's
+            # up to us!
+
+            # First, check for the easter egg.  Only do this if the back button
+            # wasn't already pressed in the previous frame (so holding back
+            # won't just keep triggering ServiceCreditView).
+            if buttons.back and (previous_buttons is None or not previous_buttons.back):
+                logger.info('Back was pressed outside of the menus, going to ServiceCreditView...')
+                heapq.heappush(views, ServiceCreditView(lcd))
+            elif buttons.select and (previous_buttons is None or not previous_buttons.select):
+                # TODO: Handle the menu.
+                pass
+
+        # Then, handle the next frame.
         if views[0].next_frame(latest_stats):
             # This view just finished up, so pop it away.
             logger.info(f'View {views[0].name} complete, removing from queue...')

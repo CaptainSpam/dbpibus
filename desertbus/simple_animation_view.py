@@ -69,6 +69,12 @@ class SimpleAnimationView(BaseView):
         as the return value of next_frame().
 
         Note that this DOES change anim_deque as it processes frames."""
+        if len(anim_deque) == 0:
+            # If the deque is empty already, we're likely bailing out of an in-
+            # progress animation.
+            logger.info('anim_deque is empty, bailing out of animation...')
+            return True
+
         current_time_millis = time.time() * 1000
 
         # Step one, find the current frame.
