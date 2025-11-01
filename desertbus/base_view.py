@@ -3,6 +3,7 @@
 from abc import ABC, abstractmethod
 import time
 import adafruit_character_lcd.character_lcd as characterlcd
+from desertbus.button_handler import ButtonData
 
 class BaseView(ABC):
     """The basic abstract view from which other views derive."""
@@ -34,6 +35,16 @@ class BaseView(ABC):
         if not isinstance(other, BaseView):
             return NotImplemented
         return self.priority < other.priority
+
+    def handle_buttons(self, data: any, buttons: ButtonData) -> bool:
+        """Handles button input.  In general, most views will ignore this.  But,
+        the operator menus will need this to deal with navigating the menu.
+        This is called before next_frame().
+
+        This should return False (the default) if this view didn't handle the
+        buttons (and thus the main thread should do something with the input),
+        True if it did (and thus the main thread should ignore the inputs)."""
+        return False
 
     @abstractmethod
     def next_frame(self, data: any) -> bool:
