@@ -102,6 +102,7 @@ class SimpleAnimationView(BaseView):
             self._anim_deque.clear()
 
         # In any case, we just eat the button.
+        self._previous_buttons = buttons
         return True
 
     def next_frame(self, data: any) -> bool:

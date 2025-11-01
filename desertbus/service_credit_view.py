@@ -17,7 +17,6 @@ class ServiceCreditView(SimpleAnimationView):
         super().__init__(lcd, [], "", 5)
         logger.info(f"Initializing ServiceCreditView!")
         self._anim_deque = None
-        self._previous_buttons = None
 
     @property
     def name(self):
@@ -41,10 +40,10 @@ class ServiceCreditView(SimpleAnimationView):
         if buttons.back and (self._previous_buttons is None or not self._previous_buttons.back):
             logger.info('Back was pressed, restarting Free Play animation...')
             self._anim_deque = self._prepare_animation(self._generate_animation(data))
-            return True
 
-        # Otherwise, just let SimpleAnimationView handle it, which it will
-        # likely do by just returning True.
+        # Beyond this, just let SimpleAnimationView handle it, which it will
+        # likely do by updating _previous_buttons and maybe clearing the
+        # animation with the Menu/Select button.
         return super().handle_buttons(data, buttons)
 
     def next_frame(self, data: any) -> bool:
