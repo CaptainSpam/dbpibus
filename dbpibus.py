@@ -85,6 +85,8 @@ logger.info('Ready.  Your driver is: JOCKO')
 # At least say something on the console so we know we're live.
 print('Your driver is: JOCKO')
 
+is_aware_of_dead_fetcher_thread = False
+
 while True:
     latest_stats = t._latest_stats
     # Check if we're in Omega yet.  Y'know, if there's stats at all.  Note that
@@ -140,5 +142,9 @@ while True:
             # This view just finished up, so pop it away.
             logger.info(f'View {views[0].name} complete, removing from queue...')
             heapq.heappop(views)
+
+    if not t.is_alive() and not is_aware_of_dead_fetcher_thread:
+        logger.critical("THE FETCHER THREAD ISN'T RUNNING!  THIS IS REALLY BAD!")
+        is_aware_of_dead_fetcher_thread = True
 
     sleep(0.035)
