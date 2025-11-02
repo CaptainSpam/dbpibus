@@ -22,6 +22,7 @@ from desertbus.service_credit_view import ServiceCreditView
 from desertbus.fetcher_thread import FetcherThread
 from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift, make_view_for_shift
 from desertbus.button_handler import ButtonHandler
+from desertbus.event_data import make_views_for_events
 
 # Get a logger going.
 log_file = f"{os.path.expanduser('~')}/dbpibus.log"
@@ -86,9 +87,10 @@ logger.info('Ready.  Your driver is: JOCKO')
 print('Your driver is: JOCKO')
 
 is_aware_of_dead_fetcher_thread = False
+previous_stats = None
 
 while True:
-    latest_stats = t._latest_stats
+    latest_stats = t.latest_stats
     # Check if we're in Omega yet.  Y'know, if there's stats at all.  Note that
     # if the Omega flag is None, *don't change out of Omega*.  None means there
     # was some problem fetching the Omega state, not that Omega is over (likely
@@ -131,11 +133,18 @@ while True:
             # wasn't already pressed in the previous frame (so holding back
             # won't just keep triggering ServiceCreditView).
             if buttons.back and (previous_buttons is None or not previous_buttons.back):
-                logger.info('Back was pressed outside of the menus, going to ServiceCreditView...')
+                logger.info('Back was pressed outside of the menus, adding ServiceCreditView to the queue...')
                 heapq.heappush(views, ServiceCreditView(lcd))
             elif buttons.select and (previous_buttons is None or not previous_buttons.select):
                 # TODO: Handle the menu.
                 pass
+
+        # Check for events; add those in if need be.
+        event_views = make_views_for_events(lcd, previous_stats, latest_stats)
+        if len(event_views) > 0:
+            for event_view in event_views:
+                logger.info(f'Event occurred!  Adding {event_view} to the queue...')
+                heapq.push(views, event_view)
 
         # Then, handle the next frame.
         if views[0].next_frame(latest_stats):
@@ -143,8 +152,13 @@ while True:
             logger.info(f'View {views[0].name} complete, removing from queue...')
             heapq.heappop(views)
 
+        # Stash away the previous stats for the next event check.
+        previous_stats = latest_stats
+
     if not t.is_alive() and not is_aware_of_dead_fetcher_thread:
         logger.critical("THE FETCHER THREAD ISN'T RUNNING!  THIS IS REALLY BAD!")
+        # TODO: Maybe restart the thread?  This really, REALLY shouldn't happen,
+        # so there's a chance we're in a super bad state somehow.
         is_aware_of_dead_fetcher_thread = True
 
     sleep(0.035)
