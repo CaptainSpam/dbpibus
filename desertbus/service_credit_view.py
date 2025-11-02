@@ -14,7 +14,7 @@ class ServiceCreditView(SimpleAnimationView):
     to be a separate class from SimpleAnimationView due to needing to check for
     the service dot like NormalView does."""
     def __init__(self, lcd: characterlcd.Character_LCD):
-        super().__init__(lcd, [], "", 5)
+        super().__init__(lcd, [], "", 10)
         logger.info(f"Initializing ServiceCreditView!")
         self._anim_deque = None
 
