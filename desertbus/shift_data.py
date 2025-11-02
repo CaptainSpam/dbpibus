@@ -18,7 +18,7 @@ class Shift(Enum):
     OMEGA_SHIFT = auto()
 
 # Color constants for the screen.  These don't perfectly align with the "canon"
-# colors used on-stream, as those don't really translate well to the LED
+# colors used on-stream, as those don't really translate well to the LCD
 # display.
 SCREEN_COLORS = {
     Shift.DAWN_GUARD: [80, 10, 0],
@@ -363,7 +363,6 @@ OMEGA_SHIFT_ANIM = [
 
 def make_view_for_shift(lcd, shift: Shift) -> SimpleAnimationView:
     match(shift):
-        # TODO: Implement the rest.
         case Shift.DAWN_GUARD:
             return SimpleAnimationView(lcd, DAWN_GUARD_ANIM, "Dawn Transition", 5)
         case Shift.ALPHA_FLIGHT:
