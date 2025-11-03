@@ -139,12 +139,13 @@ while True:
                 # TODO: Handle the menu.
                 pass
 
-        # Check for events; add those in if need be.
-        event_views = make_views_for_events(lcd, previous_stats, latest_stats)
-        if len(event_views) > 0:
-            for event_view in event_views:
-                logger.info(f'Event occurred!  Adding {event_view} to the queue...')
-                heapq.push(views, event_view)
+        # Check for events (if the run is live); add those in if need be.
+        if latest_stats.is_live:
+            event_views = make_views_for_events(lcd, previous_stats, latest_stats)
+            if len(event_views) > 0:
+                for event_view in event_views:
+                    logger.info(f'Event occurred!  Adding {event_view} to the queue...')
+                    heapq.push(views, event_view)
 
         # Then, handle the next frame.
         if views[0].next_frame(latest_stats):
