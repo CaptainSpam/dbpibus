@@ -23,6 +23,25 @@ from desertbus.fetcher_thread import FetcherThread
 from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift, make_view_for_shift
 from desertbus.button_handler import ButtonHandler
 from desertbus.event_data import make_views_for_events
+from desertbus.config import load_config, get_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim
+
+def config_shift_to_data_shift(config_shift: LcdColor) -> Shift:
+    """Converts the LcdColor config key to a Shift object.  I couldn't decide
+    if I wanted this in shift_data.py or config.py, so it lives here for now."""
+    match config_shift:
+        case LcdColor.DAWN_GUARD:
+            return Shift.DAWN_GUARD
+        case LcdColor.ALPHA_FLIGHT:
+            return Shift.ALPHA_FLIGHT
+        case LcdColor.NIGHT_WATCH:
+            return Shift.NIGHT_WATCH
+        case LcdColor.ZETA_SHIFT:
+            return Shift.ZETA_SHIFT
+        case LcdColor.OMEGA_SHIFT:
+            return Shift.OMEGA_SHIFT
+        case _:
+            # Whoops, you should have handled this before you called this.
+            raise ValueError(f'Invalid config-to-shift value {config_shift}')
 
 # Get a logger going.
 log_file = f"{os.path.expanduser('~')}/dbpibus.log"
@@ -78,6 +97,9 @@ previous_buttons = None
 # me, it'll be a queue.  Heap.  Heapy queue.
 views = []
 
+# Init config now, while we're at it.
+load_config()
+
 # Kick the thread into action.
 t = FetcherThread('FetcherThread')
 t.start()
@@ -88,9 +110,25 @@ print('Your driver is: JOCKO')
 
 is_aware_of_dead_fetcher_thread = False
 previous_stats = None
+last_known_lcd_setting = None
 
 while True:
     latest_stats = t.latest_stats
+    current_lcd_setting = get_setting(ConfigKey.LCD_COLOR)
+
+    # If the LCD color setting has suddenly changed, we need to update right
+    # away on this frame.
+    if not current_lcd_setting == last_known_lcd_setting:
+        if current_lcd_setting == LcdColor.CURRENT_SHIFT:
+            # If it's the current shift, work out what it is.
+            if latest_stats is not None and latest_stats.is_omega_shift:
+                lcd.color = SCREEN_COLORS[Shift.OMEGA_SHIFT]
+            else:
+                lcd.color = SCREEN_COLORS[get_current_shift()]
+        else:
+            # If the setting is just a single shift, set it now.
+            lcd.color = SCREEN_COLORS[config_shift_to_data_shift(current_lcd_setting)]
+
     # Check if we're in Omega yet.  Y'know, if there's stats at all.  Note that
     # if the Omega flag is None, *don't change out of Omega*.  None means there
     # was some problem fetching the Omega state, not that Omega is over (likely
@@ -99,7 +137,7 @@ while True:
     # Omega.
     now_shift = None
     if (latest_stats is not None
-        and (latest_stats.is_omega_shift is True
+        and (latest_stats.is_omega_shift
             or (latest_stats.is_omega_shift is None and now_shift == Shift.OMEGA_SHIFT))):
         now_shift = Shift.OMEGA_SHIFT
     else:
@@ -107,13 +145,21 @@ while True:
     if not now_shift == current_shift:
         logger.info(f'Shift change!  Changing from {current_shift} to {now_shift}...')
 
-        # Set the screen color first.
-        lcd.color = SCREEN_COLORS[now_shift]
+        # Set the screen color first (unless there's an override in config).
+        if current_lcd_setting == LcdColor.CURRENT_SHIFT:
+            lcd.color = SCREEN_COLORS[now_shift]
 
         # Then, ONLY if we're not switching OFF of Omega, do the animation.  It
         # just wouldn't be right to do a transition coming off of the end of the
         # run.
-        if not current_shift == Shift.OMEGA_SHIFT:
+        #
+        # Also, y'know, check settings to make sure we should be doing this.
+        shift_anim_setting = get_setting(ConfigKey.SHOW_SHIFT_ANIM)
+        if (shift_anim_setting == ShiftAnim.ALWAYS
+            or (shift_anim_setting == ShiftAnim.ONLY_IN_SEASON
+                and latest_stats is not None
+                and latest_stats.is_live
+                )) and not current_shift == Shift.OMEGA_SHIFT:
             heapq.heappush(views, make_view_for_shift(lcd, now_shift))
 
         current_shift = now_shift
@@ -140,7 +186,7 @@ while True:
                 pass
 
         # Check for events (if the run is live); add those in if need be.
-        if latest_stats.is_live:
+        if latest_stats.is_live and get_setting(ConfigKey.SHOW_EVENT_ANIM) == EventAnim.ALWAYS:
             event_views = make_views_for_events(lcd, previous_stats, latest_stats)
             if len(event_views) > 0:
                 for event_view in event_views:
@@ -153,8 +199,9 @@ while True:
             logger.info(f'View {views[0].name} complete, removing from queue...')
             heapq.heappop(views)
 
-        # Stash away the previous stats for the next event check.
+        # Stash away the previous stats and settings for the next check.
         previous_stats = latest_stats
+        last_known_lcd_setting = current_lcd_setting
 
     if not t.is_alive() and not is_aware_of_dead_fetcher_thread:
         logger.critical("THE FETCHER THREAD ISN'T RUNNING!  THIS IS REALLY BAD!")
