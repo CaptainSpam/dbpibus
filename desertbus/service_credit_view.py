@@ -37,9 +37,10 @@ class ServiceCreditView(SimpleAnimationView):
     def handle_buttons(self, data: any, buttons: ButtonData) -> bool:
         # Wait!  We handle a button here!  Specifically, we handle if the user
         # presses Service Credit again by resetting the animation.
-        if buttons.back and (self._previous_buttons is None or not self._previous_buttons.back):
-            logger.info('Back was pressed, restarting Free Play animation...')
-            self._anim_deque = self._prepare_animation(self._generate_animation(data))
+        if not self._previous_buttons is None:
+            if buttons.back and not self._previous_buttons.back:
+                logger.info('Back was pressed, restarting Free Play animation...')
+                self._anim_deque = self._prepare_animation(self._generate_animation(data))
 
         # Beyond this, just let SimpleAnimationView handle it, which it will
         # likely do by updating _previous_buttons and maybe clearing the

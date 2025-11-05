@@ -361,17 +361,17 @@ OMEGA_SHIFT_ANIM = [
     (5000,"  OMEGA  SHIFT  ","                "),
 ]
 
-def make_view_for_shift(lcd, shift: Shift) -> SimpleAnimationView:
+def make_view_for_shift(lcd, shift: Shift, priority: int = 5) -> SimpleAnimationView:
     match(shift):
         case Shift.DAWN_GUARD:
-            return SimpleAnimationView(lcd, DAWN_GUARD_ANIM, "Dawn Transition", 5)
+            return SimpleAnimationView(lcd, DAWN_GUARD_ANIM, "Dawn Transition", priority)
         case Shift.ALPHA_FLIGHT:
-            return SimpleAnimationView(lcd, ALPHA_FLIGHT_ANIM, "Alpha Transition", 5)
+            return SimpleAnimationView(lcd, ALPHA_FLIGHT_ANIM, "Alpha Transition", priority)
         case Shift.NIGHT_WATCH:
-            return SimpleAnimationView(lcd, NIGHT_WATCH_ANIM, "Night Transition", 5)
+            return SimpleAnimationView(lcd, NIGHT_WATCH_ANIM, "Night Transition", priority)
         case Shift.ZETA_SHIFT:
-            return SimpleAnimationView(lcd, ZETA_SHIFT_ANIM, "Zeta Transition", 5)
+            return SimpleAnimationView(lcd, ZETA_SHIFT_ANIM, "Zeta Transition", priority)
         case Shift.OMEGA_SHIFT:
-            return SimpleAnimationView(lcd, OMEGA_SHIFT_ANIM, "Omega Transition", 5)
+            return SimpleAnimationView(lcd, OMEGA_SHIFT_ANIM, "Omega Transition", priority)
         case _:
             raise ValueError(f"Invalid value passed to make_view_for_shift(): {shift}")

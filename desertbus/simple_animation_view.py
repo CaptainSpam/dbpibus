@@ -96,10 +96,11 @@ class SimpleAnimationView(BaseView):
         return False
 
     def handle_buttons(self, data: any, buttons: ButtonData) -> bool:
-        if buttons.select and (self._previous_buttons is None or not self._previous_buttons.select):
-            # If Menu/Select is pressed, bail out of the view right away.
-            logger.info('Select was pressed, clearing anim_deque...')
-            self._anim_deque.clear()
+        if not self._previous_buttons is None:
+            if buttons.select and not self._previous_buttons.select:
+                # If Menu/Select is pressed, bail out of the view right away.
+                logger.info('Select was pressed, clearing anim_deque...')
+                self._anim_deque.clear()
 
         # In any case, we just eat the button.
         self._previous_buttons = buttons

@@ -25,6 +25,7 @@ from desertbus.button_handler import ButtonHandler
 from desertbus.event_data import make_views_for_events
 from desertbus.config import load_config, get_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim
 from desertbus.service_menu_view import ServiceMenuView
+from desertbus.base_view import BaseView
 
 def config_shift_to_data_shift(config_shift: LcdColor) -> Shift:
     """Converts the LcdColor config key to a Shift object.  I couldn't decide
@@ -172,7 +173,13 @@ while True:
 
         # Handle any buttons first.
         buttons = button_handler.get_button_state()
-        if not views[0].handle_buttons(latest_stats, buttons):
+
+        button_result = views[0].handle_buttons(latest_stats, buttons)
+
+        if isinstance(button_result, BaseView):
+            # A view?  Someone must be running tests again.
+            heapq.heappush(views, button_result)
+        elif not button_result:
             # The view didn't handle it (which is the most common case).  It's
             # up to us!
 
