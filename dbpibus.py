@@ -24,6 +24,7 @@ from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift, make_v
 from desertbus.button_handler import ButtonHandler
 from desertbus.event_data import make_views_for_events
 from desertbus.config import load_config, get_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim
+from desertbus.service_menu_view import ServiceMenuView
 
 def config_shift_to_data_shift(config_shift: LcdColor) -> Shift:
     """Converts the LcdColor config key to a Shift object.  I couldn't decide
@@ -182,8 +183,10 @@ while True:
                 logger.info('Back was pressed outside of the menus, adding ServiceCreditView to the queue...')
                 heapq.heappush(views, ServiceCreditView(lcd))
             elif buttons.select and (previous_buttons is None or not previous_buttons.select):
-                # TODO: Handle the menu.
-                pass
+                logger.info('Menu was pressed and not handled, adding ServiceMenuView to the queue...')
+                heapq.heappush(views, ServiceMenuView(lcd))
+
+        previous_buttons = buttons
 
         # Check for events (if the run is live); add those in if need be.
         if latest_stats.is_live and get_setting(ConfigKey.SHOW_EVENT_ANIM) == EventAnim.ALWAYS:
