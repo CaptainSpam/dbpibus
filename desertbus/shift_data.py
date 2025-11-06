@@ -7,7 +7,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from desertbus.simple_animation_view import SimpleAnimationView
 
-_PACIFIC_ZONEINFO = ZoneInfo('America/Los_Angeles')
+_PACIFIC_ZONEINFO = ZoneInfo('America/Vancouver')
 
 class Shift(Enum):
     """Your garden-variety shift enums."""
