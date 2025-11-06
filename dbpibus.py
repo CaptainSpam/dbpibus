@@ -35,7 +35,13 @@ def interrupt_handler(signal, frame):
     print('Interrput!  Shutting down...')
     sys.exit(0)
 
+def term_handler(signal, frame):
+    logger.info('SIGTERM caught, shutting down...')
+    print("SIGTERM'D!!! Shutting down...")
+    sys.exit(0)
+
 signal.signal(signal.SIGINT, interrupt_handler)
+signal.signal(signal.SIGTERM, term_handler)
 
 def config_shift_to_data_shift(config_shift: LcdColor) -> Shift:
     """Converts the LcdColor config key to a Shift object.  I couldn't decide
