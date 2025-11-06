@@ -1,0 +1,13 @@
+[Unit]
+Description=Project Jocko
+
+[Service]
+ExecStart=/home/pi/jocko/bin/python3 dbpibus/dbpibus.py
+WorkingDirectory=/home/pi
+StandardOutput=inherit
+StandardError=inherit
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
