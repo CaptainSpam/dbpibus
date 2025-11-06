@@ -131,6 +131,7 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
                    splats = game_data.get(_JSON_SPLATS, 0),
                    stops = game_data.get(_JSON_STOPS, 0),
                    current_shift = current_shift,
+                   start_time_millis = start_time_millis,
                    is_live = bool(year_data.get(_JSON_IS_LIVE, False)),
                    is_omega_shift = omega,
                    is_going_to_tucson = is_going_to_tucson)

@@ -34,6 +34,10 @@ class VstData:
     # Successful bus stops this run.
     stops: int = 0
 
+    # The start time of this run, in UNIX timestamp millis.  May be in the
+    # future.
+    start_time_millis: int = 0
+
     # The current shift.  Useful for light shows and transition animations.
     current_shift: Shift = Shift.DAWN_GUARD
 

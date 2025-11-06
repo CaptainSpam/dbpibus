@@ -32,6 +32,19 @@ def _total_splats_page(data: VstData) -> str:
 def _total_stops_page(data: VstData) -> str:
     return f"Bus stops: {data.stops}"
 
+def _run_starts_in(data: VstData) -> str:
+    millis_until = data.start_time_millis - (time.time() * 1000)
+    if millis_until < 0:
+        # The start time has passed, but we don't have the is_live flag yet.
+        return "Starting soon..."
+
+    hours = int(millis_until // _MILLIS_PER_HOUR)
+    minutes = int((millis_until % _MILLIS_PER_HOUR) // _MILLIS_PER_MINUTE)
+    seconds = int((millis_until % _MILLIS_PER_MINUTE) // 1000)
+
+    # We really shouldn't get 1000+ hour differences here, but...
+    return f"{"Start" if hours < 1000 else "Go"}: {hours}:{minutes:02d}:{seconds:02d}"
+
 _LIVE_PAGES = [
     _route_page,
     _to_next_hour_page,
@@ -49,12 +62,21 @@ _OFFSEASON_PAGES = [
     _total_stops_page,
 ]
 
+_PRESEASON_PAGES = [
+    _to_next_hour_page,
+    _total_hours_page,
+    _run_starts_in,
+]
+
 _TOTAL_LIVE_PAGES = len(_LIVE_PAGES)
 _TOTAL_OFFSEASON_PAGES = len(_OFFSEASON_PAGES)
+_TOTAL_PRESEASON_PAGES = len(_PRESEASON_PAGES)
 _SERVICE_DOT_MILLIS = 120000
 _LIVE_PAGE_TIME_SECS = 4
 _OFFSEASON_PAGE_TIME_SECS = 6
 _COUNTUP_ANIMATION_MILLIS = 1000
+_MILLIS_PER_MINUTE = 1000 * 60
+_MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
 
 def _needs_service_dot(data: VstData) -> bool:
     time_since_last = (time.time() * 1000) - data.time_fetched
@@ -124,9 +146,11 @@ class NormalView(BaseView):
         if not isinstance(data, VstData):
             return False
 
+        right_now_millis = time.time() * 1000
+
         if self._last_stabilized_time_millis == 0:
             # This is the first frame!  Initialize!
-            self._last_stabilized_time_millis = time.time() * 1000
+            self._last_stabilized_time_millis = right_now_millis
 
         line1 = ''
         time_delta = time.time() - self._start_time
@@ -135,6 +159,10 @@ class NormalView(BaseView):
             # The page we're on depends on elapsed time.
             current_page = int((time_delta // _LIVE_PAGE_TIME_SECS) % _TOTAL_LIVE_PAGES)
             line1 = _LIVE_PAGES[current_page](data).center(16)
+        elif data.start_time_millis > right_now_millis:
+            # We can recycle the offseason page timing.
+            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % _TOTAL_PRESEASON_PAGES)
+            line1 = _PRESEASON_PAGES[current_page](data).center(16)
         else:
             current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % _TOTAL_OFFSEASON_PAGES)
             line1 = _OFFSEASON_PAGES[current_page](data).center(16)
