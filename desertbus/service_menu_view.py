@@ -348,7 +348,6 @@ class ServiceMenuView(BaseView):
     def __init__(self, lcd: characterlcd.Character_LCD):
         super().__init__(lcd)
         logger.info(f"Initializing ServiceMenuView!")
-        self._last_buttons = None
         self._menu_stack = [_TopLevel("Top Level")]
 
     @property
@@ -388,7 +387,7 @@ class ServiceMenuView(BaseView):
         # If the last-known buttons are None, take whatever's pressed as the
         # first and ignore further processing.  That oughta stop us from
         # skipping right past _TopLevel at the start.
-        if not self._last_buttons is None and not self._last_buttons == buttons:
+        if not self._previous_buttons is None and not self._previous_buttons == buttons:
             (rtype, extra) = self._menu_stack[-1].handle_buttons(buttons)
 
             match rtype:
@@ -405,13 +404,13 @@ class ServiceMenuView(BaseView):
                     self._menu_stack.append(extra)
                 case _ReturnType.GO_TO_VIEW:
                     logger.debug(f'Telling the main loop to show {extra}...')
-                    # We have to update _last_buttons here, as we're returning
-                    # here, too.
-                    self._last_buttons = buttons
+                    # We have to update _previous_buttons here, as we're
+                    # returning here, too.
+                    self._previous_buttons = buttons
                     return self._get_test_view(extra)
 
         # After processing, remember the last-known buttons.
-        self._last_buttons = buttons
+        self._previous_buttons = buttons
         return True
 
     def next_frame(self, data: any) -> bool:

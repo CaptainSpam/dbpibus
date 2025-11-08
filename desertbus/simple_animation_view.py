@@ -27,7 +27,6 @@ class SimpleAnimationView(BaseView):
         self._priority = priority
         self._anim_sequence = anim_sequence
         self._anim_deque = None
-        self._previous_buttons = None
 
     @property
     def priority(self):

@@ -10,6 +10,7 @@ class BaseView(ABC):
     def __init__(self, lcd: characterlcd.Character_LCD):
         self._advance_frame_time()
         self._lcd = lcd
+        self._previous_buttons = None
 
     @property
     @abstractmethod
