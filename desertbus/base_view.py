@@ -37,15 +37,11 @@ class BaseView(ABC):
             return NotImplemented
         return self.priority < other.priority
 
-    def handle_buttons(self, data: any, buttons: ButtonData) -> bool:
-        """Handles button input.  In general, most views will ignore this.  But,
-        the operator menus will need this to deal with navigating the menu.
-        This is called before next_frame().
-
-        This should return False (the default) if this view didn't handle the
-        buttons (and thus the main thread should do something with the input),
-        True if it did (and thus the main thread should ignore the inputs)."""
-        return False
+    def handle_buttons(self, data: any, buttons: ButtonData) -> any:
+        """Handles button input.  This returns a new view if the main loop needs
+        to add it to the queue, or None if nothing needs to be done."""
+        self._previous_buttons = buttons
+        return None
 
     @abstractmethod
     def next_frame(self, data: any) -> bool:

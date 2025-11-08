@@ -2,6 +2,9 @@
 
 from desertbus.base_view import BaseView
 from desertbus.vst_data import VstData, needs_service_dot
+from desertbus.button_handler import ButtonData
+from desertbus.service_credit_view import ServiceCreditView
+from desertbus.service_menu_view import ServiceMenuView
 import time
 import adafruit_character_lcd.character_lcd as characterlcd
 import logging
@@ -135,6 +138,17 @@ class NormalView(BaseView):
                 donation_difference = data.donation_total - self._last_stabilized_donations
                 fractional_delta = donation_difference * progress_percent
                 return round(self._last_stabilized_donations + fractional_delta, 2)
+
+    def handle_buttons(self, data: any, buttons: ButtonData) -> BaseView:
+        to_return = None
+        if self._previous_buttons is not None:
+            if buttons.back and not self._previous_buttons.back:
+                to_return = ServiceCreditView(self._lcd)
+            elif buttons.select and not self._previous_buttons.select:
+                to_return = ServiceMenuView(self._lcd)
+
+        self._previous_buttons = buttons
+        return to_return
 
     def next_frame(self, data: any) -> bool:
         # This really super needs to have a VstData to do something.

@@ -18,13 +18,11 @@ import heapq
 import logging
 from logging.handlers import RotatingFileHandler
 from desertbus.normal_view import NormalView
-from desertbus.service_credit_view import ServiceCreditView
 from desertbus.fetcher_thread import FetcherThread
 from desertbus.shift_data import get_current_shift, SCREEN_COLORS, Shift, make_view_for_shift
 from desertbus.button_handler import ButtonHandler
 from desertbus.event_data import make_views_for_events
 from desertbus.config import load_config, get_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim
-from desertbus.service_menu_view import ServiceMenuView
 from desertbus.base_view import BaseView
 import signal
 import sys
@@ -191,26 +189,15 @@ try:
 
             # Handle any buttons first.
             buttons = button_handler.get_button_state()
+            if not buttons == previous_buttons:
+                # Well, only handle them if they're different than before.
+                # There's no reason (yet) to hold a button down, so we only act
+                # on presses.
+                button_result = views[0].handle_buttons(latest_stats, buttons)
 
-            button_result = views[0].handle_buttons(latest_stats, buttons)
-
-            if isinstance(button_result, BaseView):
-                # A view?  Someone must be running tests again.
-                heapq.heappush(views, button_result)
-            elif not button_result:
-                # The view didn't handle it (which is the most common case).
-                # It's up to us!
-
-                # First, check for the easter egg.  Only do this if the back
-                # button wasn't already pressed in the previous frame (so
-                # holding the back button won't just keep triggering
-                # ServiceCreditView).
-                if buttons.back and (previous_buttons is None or not previous_buttons.back):
-                    logger.info('Back was pressed outside of the menus, adding ServiceCreditView to the queue...')
-                    heapq.heappush(views, ServiceCreditView(lcd))
-                elif buttons.select and (previous_buttons is None or not previous_buttons.select):
-                    logger.info('Menu was pressed and not handled, adding ServiceMenuView to the queue...')
-                    heapq.heappush(views, ServiceMenuView(lcd))
+                if isinstance(button_result, BaseView):
+                    # If we got a view back, add it to the heap!
+                    heapq.heappush(views, button_result)
 
             previous_buttons = buttons
 

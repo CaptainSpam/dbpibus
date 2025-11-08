@@ -94,7 +94,7 @@ class SimpleAnimationView(BaseView):
         self._display_text(current_frame[1], current_frame[2])
         return False
 
-    def handle_buttons(self, data: any, buttons: ButtonData) -> bool:
+    def handle_buttons(self, data: any, buttons: ButtonData) -> any:
         if not self._previous_buttons is None:
             if buttons.select and not self._previous_buttons.select:
                 # If Menu/Select is pressed, bail out of the view right away.
@@ -103,7 +103,7 @@ class SimpleAnimationView(BaseView):
 
         # In any case, we just eat the button.
         self._previous_buttons = buttons
-        return True
+        return None
 
     def next_frame(self, data: any) -> bool:
         if self._anim_deque is None:
