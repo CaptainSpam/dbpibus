@@ -2,6 +2,9 @@
 
 from dataclasses import dataclass
 from desertbus.shift_data import Shift
+import time
+
+_SERVICE_DOT_MILLIS = 120000
 
 @dataclass(frozen=True)
 class VstData:
@@ -51,3 +54,6 @@ class VstData:
     # Las Vegas.
     is_going_to_tucson: bool = False
 
+def needs_service_dot(data: VstData) -> bool:
+    time_since_last = (time.time() * 1000) - data.time_fetched
+    return time_since_last > _SERVICE_DOT_MILLIS

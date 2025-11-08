@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from desertbus.base_view import BaseView
-from desertbus.vst_data import VstData
+from desertbus.vst_data import VstData, needs_service_dot
 import time
 import adafruit_character_lcd.character_lcd as characterlcd
 import logging
@@ -71,16 +71,11 @@ _PRESEASON_PAGES = [
 _TOTAL_LIVE_PAGES = len(_LIVE_PAGES)
 _TOTAL_OFFSEASON_PAGES = len(_OFFSEASON_PAGES)
 _TOTAL_PRESEASON_PAGES = len(_PRESEASON_PAGES)
-_SERVICE_DOT_MILLIS = 120000
 _LIVE_PAGE_TIME_SECS = 4
 _OFFSEASON_PAGE_TIME_SECS = 6
 _COUNTUP_ANIMATION_MILLIS = 1000
 _MILLIS_PER_MINUTE = 1000 * 60
 _MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
-
-def _needs_service_dot(data: VstData) -> bool:
-    time_since_last = (time.time() * 1000) - data.time_fetched
-    return time_since_last > _SERVICE_DOT_MILLIS
 
 class NormalView(BaseView):
     """The NormalView, NormalView, NormalView, NORMALVIEEEEEEEEEEEEEW!!! is the
@@ -168,7 +163,7 @@ class NormalView(BaseView):
             line1 = _OFFSEASON_PAGES[current_page](data).center(16)
 
         # Either way, the second line is the donation total.
-        line2 = f"${self._get_displayed_donation_total(data):,.2f}{'.' if _needs_service_dot(data) else ''}".center(16)
+        line2 = f"${self._get_displayed_donation_total(data):,.2f}{'.' if needs_service_dot(data) else ''}".center(16)
 
         # Display 'em!
         self._display_text(line1, line2)

@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 
 import logging
-from desertbus.vst_data import VstData
+from desertbus.vst_data import VstData, needs_service_dot
 from desertbus.simple_animation_view import SimpleAnimationView
-from desertbus.normal_view import _needs_service_dot
 from desertbus.button_handler import ButtonData
 import adafruit_character_lcd.character_lcd as characterlcd
 
@@ -23,7 +22,7 @@ class ServiceCreditView(SimpleAnimationView):
         return f'ServiceCreditView'
 
     def _generate_animation(self, data: VstData) -> list:
-        free_play_text = f'FREE PLAY{'.' if _needs_service_dot(data) else ''}'.center(16)
+        free_play_text = f'FREE PLAY{'.' if needs_service_dot(data) else ''}'.center(16)
         press_start_text = 'PRESS START'.center(16)
         blank_text = '                '
 
