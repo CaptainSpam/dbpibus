@@ -97,7 +97,13 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
     donation_data = stats.get(_JSON_DONATION_DATA_CATEGORY)
 
     # There isn't much processing we need to do, but there IS something.
-    miles_total = float(game_data.get(_JSON_ODOMETER, 0.0))
+    miles_total = 0.0
+    try:
+        miles_total = float(game_data.get(_JSON_ODOMETER, 0.0))
+    except ValueError as e:
+        # If the run isn't in progress yet, this will be an empty string, which
+        # doesn't parse to float.
+        pass
     miles_driven = miles_total - _ODOMETER_OFFSET
     trips_taken = miles_driven // _MILES_TO_VEGAS
     is_going_to_tucson = False
