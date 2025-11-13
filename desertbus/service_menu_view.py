@@ -11,7 +11,7 @@ from desertbus.simple_animation_view import SimpleAnimationView
 from desertbus.shift_data import Shift, make_view_for_shift
 from desertbus.event_data import Event, make_view_for_event
 import adafruit_character_lcd.character_lcd as characterlcd
-from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim
+from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +282,58 @@ _NODE_STRUCTURE = {
                         { "title": "Night Watch", "value": LcdColor.NIGHT_WATCH },
                         { "title": "Zeta Shift", "value": LcdColor.ZETA_SHIFT },
                         { "title": "Omega Shift", "value": LcdColor.OMEGA_SHIFT },
+                    ]
+                },
+                {
+                    "type": _NodeType.CONTAINER,
+                    "title": "Clock Settings",
+                    "children": [
+                        {
+                            "type": _NodeType.SETTING,
+                            "title": "In-Run Clock",
+                            "key": ConfigKey.SHOW_TIME_IN_RUN,
+                            "options": [
+                                { "title": "Yes", "value": ShowTime.YES },
+                                { "title": "No", "value": ShowTime.NO },
+                            ]
+                        },
+                        {
+                            "type": _NodeType.SETTING,
+                            "title": "Preseason Clock",
+                            "key": ConfigKey.SHOW_TIME_IN_PRESEASON,
+                            "options": [
+                                { "title": "Yes", "value": ShowTime.YES },
+                                { "title": "No", "value": ShowTime.NO },
+                            ]
+                        },
+                        {
+                            "type": _NodeType.SETTING,
+                            "title": "Offseason Clock",
+                            "key": ConfigKey.SHOW_TIME_IN_OFFSEASON,
+                            "options": [
+                                { "title": "Yes", "value": ShowTime.YES },
+                                { "title": "No", "value": ShowTime.NO },
+                            ]
+                        },
+                        {
+                            "type": _NodeType.SETTING,
+                            "title": "Time Format",
+                            "key": ConfigKey.TIME_FORMAT,
+                            "options": [
+                                { "title": "12-hour", "value": TimeFormat.TWELVE_HOUR },
+                                { "title": "24-hour", "value": TimeFormat.TWENTY_FOUR_HOUR },
+                            ]
+                        },
+                        {
+                            "type": _NodeType.SETTING,
+                            "title": "Date Format",
+                            "key": ConfigKey.DATE_FORMAT,
+                            "options": [
+                                { "title": "YYYY/MM/DD", "value": DateFormat.YYYYMMDD },
+                                { "title": "DD/MM/YYYY", "value": DateFormat.DDMMYYYY },
+                                { "title": "MM/DD/YYYY", "value": DateFormat.MMDDYYYY },
+                            ]
+                        },
                     ]
                 }
             ]
