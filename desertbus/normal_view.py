@@ -5,7 +5,11 @@ from desertbus.vst_data import VstData, needs_service_dot
 from desertbus.button_handler import ButtonData
 from desertbus.service_credit_view import ServiceCreditView
 from desertbus.service_menu_view import ServiceMenuView
+from desertbus.shift_data import PACIFIC_ZONEINFO
+from desertbus.config import ConfigKey, get_setting, ShowTime, TimeFormat, DateFormat
+from datetime import datetime
 import time
+import copy
 import adafruit_character_lcd.character_lcd as characterlcd
 import logging
 
@@ -39,6 +43,7 @@ def _run_starts_in(data: VstData) -> str:
     millis_until = data.start_time_millis - (time.time() * 1000)
     if millis_until < 0:
         # The start time has passed, but we don't have the is_live flag yet.
+        # Honestly, I dont't think this is logically possible.
         return "Starting soon..."
 
     hours = int(millis_until // _MILLIS_PER_HOUR)
@@ -47,6 +52,31 @@ def _run_starts_in(data: VstData) -> str:
 
     # We really shouldn't get 1000+ hour differences here, but...
     return f"{"Start" if hours < 1000 else "Go"}: {hours}:{minutes:02d}:{seconds:02d}"
+
+def _time_date_page(data: VstData) -> str:
+    # We don't have much space to work with here.
+    right_now = datetime.now(PACIFIC_ZONEINFO)
+
+    twelve_hour_hour = right_now.hour
+    twelve_hour_ampm = 'a'
+    if twelve_hour_hour == 0:
+        twelve_hour_hour = 12
+    if twelve_hour_hour > 12:
+        twelve_hour_hour -= 12
+        twelve_hour_ampm = 'p'
+
+    time_string = f'{twelve_hour_hour:02d}:{right_now.minute:02d}{twelve_hour_ampm if get_setting(ConfigKey.TIME_FORMAT) == TimeFormat.TWELVE_HOUR else " "}'
+
+    date_string = ''
+    match get_setting(ConfigKey.DATE_FORMAT):
+        case DateFormat.YYYYMMDD:
+            date_string = f'{right_now.year}/{right_now.month:02d}/{right_now.day:02d}'
+        case DateFormat.DDMMYYYY:
+            date_string = f'{right_now.day:02d}/{right_now.month:02d}/{right_now.year}'
+        case DateFormat.YYYYMMDD:
+            date_string = f'{right_now.year}/{right_now.month:02d}/{right_now.day:02d}'
+
+    return time_string + date_string
 
 _LIVE_PAGES = [
     _route_page,
@@ -79,6 +109,30 @@ _OFFSEASON_PAGE_TIME_SECS = 6
 _COUNTUP_ANIMATION_MILLIS = 1000
 _MILLIS_PER_MINUTE = 1000 * 60
 _MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
+
+def _get_in_run_pages() -> list:
+    pages = copy.copy(_LIVE_PAGES)
+
+    if get_setting(ConfigKey.SHOW_TIME_IN_RUN) == ShowTime.YES:
+        pages.append(_time_date_page)
+
+    return pages
+
+def _get_preseason_pages() -> list:
+    pages = copy.copy(_PRESEASON_PAGES)
+
+    if get_setting(ConfigKey.SHOW_TIME_IN_PRESEASON) == ShowTime.YES:
+        pages.append(_time_date_page)
+
+    return pages
+
+def _get_offseason_pages() -> list:
+    pages = copy.copy(_OFFSEASON_PAGES)
+
+    if get_setting(ConfigKey.SHOW_TIME_IN_OFFSEASON) == ShowTime.YES:
+        pages.append(_time_date_page)
+
+    return pages
 
 class NormalView(BaseView):
     """The NormalView, NormalView, NormalView, NORMALVIEEEEEEEEEEEEEW!!! is the
@@ -169,23 +223,26 @@ class NormalView(BaseView):
             # If the start time is AFTER now regardless of the live flag, this
             # must mean the data we got is an UPCOMING run's time, which means
             # we're in the preseason.
-            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % _TOTAL_PRESEASON_PAGES)
-            line1 = _PRESEASON_PAGES[current_page](data).center(16)
+            pages = _get_preseason_pages()
+            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % len(pages))
+            line1 = pages[current_page](data).center(16)
         elif data.is_live:
             # If we're live (AND the previous if statement is false, meaning the
             # start time is BEFORE now), then use the live pages.  Note that in
             # the JSON, the live flag might be true during the tech test, which
             # is before the run begins.
-            current_page = int((time_delta // _LIVE_PAGE_TIME_SECS) % _TOTAL_LIVE_PAGES)
-            line1 = _LIVE_PAGES[current_page](data).center(16)
+            pages = _get_in_run_pages()
+            current_page = int((time_delta // _LIVE_PAGE_TIME_SECS) % len(pages))
+            line1 = pages[current_page](data).center(16)
         else:
             # The only other possible case is that the live flag is false AND
             # the start time is in the past (either because the run is over for
             # the current year or we're viewing last year's data due to the
             # current year's JSON not existing yet).  That means we're in the
             # offseason.
-            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % _TOTAL_OFFSEASON_PAGES)
-            line1 = _OFFSEASON_PAGES[current_page](data).center(16)
+            pages = _get_offseason_pages()
+            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % len(pages))
+            line1 = pages[current_page](data).center(16)
 
         # Either way, the second line is the donation total.
         line2 = f"${self._get_displayed_donation_total(data):,.2f}{'.' if needs_service_dot(data) else ''}".center(16)

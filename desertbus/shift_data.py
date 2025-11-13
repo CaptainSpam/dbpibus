@@ -7,7 +7,7 @@ from datetime import datetime
 from zoneinfo import ZoneInfo
 from desertbus.simple_animation_view import SimpleAnimationView
 
-_PACIFIC_ZONEINFO = ZoneInfo('America/Vancouver')
+PACIFIC_ZONEINFO = ZoneInfo('America/Vancouver')
 
 class Shift(Enum):
     """Your garden-variety shift enums."""
@@ -31,7 +31,7 @@ SCREEN_COLORS = {
 def get_current_shift() -> Shift:
     """Gets the current shift based on the time out on the west coast.  It's
     up to the caller to not call this if it's currently Omega Shift."""
-    right_now = datetime.now(_PACIFIC_ZONEINFO)
+    right_now = datetime.now(PACIFIC_ZONEINFO)
     if right_now.hour >=0 and right_now.hour < 6:
         return Shift.ZETA_SHIFT
     if right_now.hour >=6 and right_now.hour < 12:
