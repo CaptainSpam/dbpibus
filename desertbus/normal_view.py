@@ -163,16 +163,27 @@ class NormalView(BaseView):
 
         line1 = ''
         time_delta = time.time() - self._start_time
-        # First: Are we in-run?  That determines what pages we show.
-        if data.is_live:
-            # The page we're on depends on elapsed time.
-            current_page = int((time_delta // _LIVE_PAGE_TIME_SECS) % _TOTAL_LIVE_PAGES)
-            line1 = _LIVE_PAGES[current_page](data).center(16)
-        elif data.start_time_millis > right_now_millis:
-            # We can recycle the offseason page timing.
+        # First: Are we in-run?  That determines what pages we show.  Then, the
+        # specific page we're on depends on elapsed time.
+        if data.start_time_millis > right_now_millis:
+            # If the start time is AFTER now regardless of the live flag, this
+            # must mean the data we got is an UPCOMING run's time, which means
+            # we're in the preseason.
             current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % _TOTAL_PRESEASON_PAGES)
             line1 = _PRESEASON_PAGES[current_page](data).center(16)
+        elif data.is_live:
+            # If we're live (AND the previous if statement is false, meaning the
+            # start time is BEFORE now), then use the live pages.  Note that in
+            # the JSON, the live flag might be true during the tech test, which
+            # is before the run begins.
+            current_page = int((time_delta // _LIVE_PAGE_TIME_SECS) % _TOTAL_LIVE_PAGES)
+            line1 = _LIVE_PAGES[current_page](data).center(16)
         else:
+            # The only other possible case is that the live flag is false AND
+            # the start time is in the past (either because the run is over for
+            # the current year or we're viewing last year's data due to the
+            # current year's JSON not existing yet).  That means we're in the
+            # offseason.
             current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % _TOTAL_OFFSEASON_PAGES)
             line1 = _OFFSEASON_PAGES[current_page](data).center(16)
 
