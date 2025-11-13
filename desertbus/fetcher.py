@@ -118,6 +118,8 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
     donation_total = float(donation_data.get(_JSON_DONATIONS, 0.0))
     to_next_hour = donation_converter.to_next_hour_from_donation_amount(donation_total)
     total_hours = donation_converter.total_hours_for_donation_amount(donation_total)
+    
+    is_live = bool(year_data.get(_JSON_IS_LIVE, False)) and start_time_millis <= right_now_millis
 
     current_shift = None
     if omega:
@@ -138,7 +140,7 @@ def _parse_stats(json_blob, omega: bool) -> VstData:
                    stops = game_data.get(_JSON_STOPS, 0),
                    current_shift = current_shift,
                    start_time_millis = start_time_millis,
-                   is_live = bool(year_data.get(_JSON_IS_LIVE, False)),
+                   is_live = is_live,
                    is_omega_shift = omega,
                    is_going_to_tucson = is_going_to_tucson)
 
