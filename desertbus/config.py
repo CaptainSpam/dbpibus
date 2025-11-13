@@ -17,6 +17,16 @@ class ConfigKey(StrEnum):
     SHOW_EVENT_ANIM = 'ShowEventAnim'
     # LCD backlight color (as an enum; use shift_data.py to resolve to a color).
     LCD_COLOR = 'LcdColor'
+    # If/when the current time page should be shown during a run.
+    SHOW_TIME_IN_RUN = 'ShowTimeInRun'
+    # If/when the current time page should be shown during the preseason.
+    SHOW_TIME_IN_PRESEASON = 'ShowTimeInPreseason'
+    # If/when the current time page should be shown during the offseason.
+    SHOW_TIME_IN_OFFSEASON = 'ShowTimeInOffseason'
+    # Format of the time, if displayed.
+    TIME_FORMAT = 'TimeFormat'
+    # Format of the date, if displayed.
+    DATE_FORMAT = 'DateFormat'
 
 class ShiftAnim(StrEnum):
     """Options for SHOW_SHIFT_ANIM."""
@@ -49,12 +59,34 @@ class LcdColor(StrEnum):
     # Always use Omega Shift's color (grey/white).
     OMEGA_SHIFT = 'OmegaShift'
 
+class ShowTime(StrEnum):
+    """Options for showing the time.  It's a boolean, yes, but it's more
+    consistent to make it an enum."""
+    YES = 'Yes'
+    NO = 'No'
+
+class TimeFormat(StrEnum):
+    """Time format."""
+    TWELVE_HOUR = '12Hour'
+    TWENTY_FOUR_HOUR = '24Hour'
+
+class DateFormat(StrEnum):
+    """Date format.  No judgements allowed."""
+    YYYYMMDD = 'YYYYMMDD'
+    DDMMYYYY = 'DDMMYYYY'
+    MMDDYYYY = 'MMDDYYYY'
+
 def _make_default_config():
     """Makes a new default config dict."""
     return {
         ConfigKey.SHOW_SHIFT_ANIM: ShiftAnim.ALWAYS,
         ConfigKey.SHOW_EVENT_ANIM: EventAnim.ALWAYS,
         ConfigKey.LCD_COLOR: LcdColor.CURRENT_SHIFT,
+        ConfigKey.SHOW_TIME_IN_RUN: ShowTime.NO,
+        ConfigKey.SHOW_TIME_IN_PRESEASON: ShowTime.NO,
+        ConfigKey.SHOW_TIME_IN_OFFSEASON: ShowTime.NO,
+        ConfigKey.TIME_FORMAT: TimeFormat.TWELVE_HOUR,
+        ConfigKey.DATE_FORMAT: DateFormat.YYYYMMDD,
     }
 
 _current_config = None
@@ -78,6 +110,16 @@ def _validate_or_raise(key: ConfigKey, value: any):
             EventAnim(value)
         case ConfigKey.LCD_COLOR:
             LcdColor(value)
+        case ConfigKey.SHOW_TIME_IN_RUN:
+            ShowTime(value)
+        case ConfigKey.SHOW_TIME_IN_PRESEASON:
+            ShowTime(value)
+        case ConfigKey.SHOW_TIME_IN_OFFSEASON:
+            ShowTime(value)
+        case ConfigKey.TIME_FORMAT:
+            TimeFormat(value)
+        case ConfigKey.DATE_FORMAT:
+            DateFormat(value)
         case _:
             raise ValueError(f'Invalid key {key}')
 
@@ -121,6 +163,21 @@ def load_config():
 
             if not _validate(ConfigKey.LCD_COLOR, new_config[ConfigKey.LCD_COLOR]):
                 new_config[ConfigKey.LCD_COLOR] = pristine_defaults[ConfigKey.LCD_COLOR]
+
+            if not _validate(ConfigKey.SHOW_TIME_IN_RUN, new_config[ConfigKey.SHOW_TIME_IN_RUN]):
+                new_config[ConfigKey.SHOW_TIME_IN_RUN] = pristine_defaults[ConfigKey.SHOW_TIME_IN_RUN]
+
+            if not _validate(ConfigKey.SHOW_TIME_IN_PRESEASON, new_config[ConfigKey.SHOW_TIME_IN_PRESEASON]):
+                new_config[ConfigKey.SHOW_TIME_IN_PRESEASON] = pristine_defaults[ConfigKey.SHOW_TIME_IN_PRESEASON]
+
+            if not _validate(ConfigKey.SHOW_TIME_IN_OFFSEASON, new_config[ConfigKey.SHOW_TIME_IN_OFFSEASON]):
+                new_config[ConfigKey.SHOW_TIME_IN_OFFSEASON] = pristine_defaults[ConfigKey.SHOW_TIME_IN_OFFSEASON]
+
+            if not _validate(ConfigKey.TIME_FORMAT, new_config[ConfigKey.TIME_FORMAT]):
+                new_config[ConfigKey.TIME_FORMAT] = pristine_defaults[ConfigKey.TIME_FORMAT]
+
+            if not _validate(ConfigKey.DATE_FORMAT, new_config[ConfigKey.DATE_FORMAT]):
+                new_config[ConfigKey.DATE_FORMAT] = pristine_defaults[ConfigKey.DATE_FORMAT]
 
             # That's it!  Stash this away as our "real" version.
             _current_config = new_config
