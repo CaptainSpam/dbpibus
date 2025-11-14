@@ -282,6 +282,11 @@ def total_hours_for_donation_amount(current: float) -> int:
     """Calculates the total hours that will be bussed given the donation total.
     This will be an int, not a fractional amount of hours.  This may lose
     accuracy at absurd amounts."""
+    if current < 1.00:
+        # This shouldn't happen (LRR always donates the first $100, at least),
+        # but in the event it does, assume zero.
+        return 0
+
     if current >= _HOUR_THRESHOLDS[-1]:
         # In this case, the donations are beyond the lookup table, so some
         # floating point math is necessary.  This shouldn't happen.  They aren't
