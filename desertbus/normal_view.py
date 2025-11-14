@@ -43,7 +43,9 @@ def _run_starts_in(data: VstData) -> str:
     millis_until = data.start_time_millis - (time.time() * 1000)
     if millis_until < 0:
         # The start time has passed, but we don't have the is_live flag yet.
-        # Honestly, I dont't think this is logically possible.
+        # This is only possible if the run's supposedly started but we don't
+        # have the flag yet, either because the VST hasn't updated or we haven't
+        # made that fetch yet.
         return "Starting soon..."
 
     hours = int(millis_until // _MILLIS_PER_HOUR)
@@ -222,10 +224,11 @@ class NormalView(BaseView):
         time_delta = time.time() - self._start_time
         # First: Are we in-run?  That determines what pages we show.  Then, the
         # specific page we're on depends on elapsed time.
-        if data.start_time_millis > right_now_millis:
+        if data.start_time_millis > right_now_millis or (not data.is_live and data.start_time_millis + (_MILLIS_PER_MINUTE * 15) > right_now_millis):
             # If the start time is AFTER now regardless of the live flag, this
             # must mean the data we got is an UPCOMING run's time, which means
-            # we're in the preseason.
+            # we're in the preseason.  This also applies if right now is within
+            # 15 minutes of the start time but the live flag is still false.
             pages = _get_preseason_pages()
             current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % len(pages))
             line1 = pages[current_page](data).center(16)
