@@ -304,6 +304,10 @@ def to_next_hour_from_donation_amount(current: float) -> float:
     should return the NEXT hour's requirement.  However, owing to floating point
     goofiness, at high enough values it may return inaccurate results, including
     zero."""
+    if current < 1.00:
+        # Again, this shouldn't happen, but...
+        return 0
+
     if current >= _HOUR_THRESHOLDS[-1]:
         # Again, the donations are beyond the lookup table.  Again, this can get
         # silly with the floating point math, but, again, this shouldn't happen.
