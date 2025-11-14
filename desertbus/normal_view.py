@@ -57,15 +57,18 @@ def _time_date_page(data: VstData) -> str:
     # We don't have much space to work with here.
     right_now = datetime.now(PACIFIC_ZONEINFO)
 
-    twelve_hour_hour = right_now.hour
-    twelve_hour_ampm = 'a'
-    if twelve_hour_hour == 0:
-        twelve_hour_hour = 12
-    if twelve_hour_hour > 12:
-        twelve_hour_hour -= 12
-        twelve_hour_ampm = 'p'
+    display_hour = right_now.hour
+    ampm = ' '
+    time_format = get_setting(ConfigKey.TIME_FORMAT)
+    if time_format == TimeFormat.TWELVE_HOUR:
+        ampm = 'a'
+        if display_hour == 0:
+            display_hour = 12
+        if display_hour > 12:
+            display_hour -= 12
+            ampm = 'p'
 
-    time_string = f'{twelve_hour_hour:02d}:{right_now.minute:02d}{twelve_hour_ampm if get_setting(ConfigKey.TIME_FORMAT) == TimeFormat.TWELVE_HOUR else " "}'
+    time_string = f'{display_hour:02d}:{right_now.minute:02d}{ampm}'
 
     date_string = ''
     match get_setting(ConfigKey.DATE_FORMAT):
