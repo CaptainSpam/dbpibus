@@ -198,6 +198,7 @@ def save_config():
 
     with open(_CONFIG_FILE, 'w') as json_file:
         json.dump(_current_config, json_file)
+    os.sync()
 
 def set_setting(key: ConfigKey, value: StrEnum):
     """Sets a setting key to the given value, then saves the config back to
