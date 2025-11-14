@@ -76,8 +76,8 @@ def _time_date_page(data: VstData) -> str:
             date_string = f'{right_now.year}/{right_now.month:02d}/{right_now.day:02d}'
         case DateFormat.DDMMYYYY:
             date_string = f'{right_now.day:02d}/{right_now.month:02d}/{right_now.year}'
-        case DateFormat.YYYYMMDD:
-            date_string = f'{right_now.year}/{right_now.month:02d}/{right_now.day:02d}'
+        case DateFormat.MMDDYYYY:
+            date_string = f'{right_now.month:02d}/{right_now.day:02d}/{right_now_year}'
 
     return time_string + date_string
 
