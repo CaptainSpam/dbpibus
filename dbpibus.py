@@ -207,7 +207,7 @@ try:
                 if len(event_views) > 0:
                     for event_view in event_views:
                         logger.info(f'Event occurred!  Adding {event_view} to the queue...')
-                        heapq.push(views, event_view)
+                        heapq.heappush(views, event_view)
 
             # Then, handle the next frame.
             if views[0].next_frame(latest_stats):
