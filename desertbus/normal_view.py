@@ -222,6 +222,8 @@ class NormalView(BaseView):
 
         line1 = ''
         time_delta = time.time() - self._start_time
+        pages = []
+        page_time_secs = 10
         # First: Are we in-run?  That determines what pages we show.  Then, the
         # specific page we're on depends on elapsed time.
         if data.start_time_millis > right_now_millis or (not data.is_live and data.start_time_millis + (_MILLIS_PER_MINUTE * 15) > right_now_millis):
@@ -230,16 +232,14 @@ class NormalView(BaseView):
             # we're in the preseason.  This also applies if right now is within
             # 15 minutes of the start time but the live flag is still false.
             pages = _get_preseason_pages()
-            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % len(pages))
-            line1 = pages[current_page](data).center(16)
+            page_time_secs = _OFFSEASON_PAGE_TIME_SECS
         elif data.is_live:
             # If we're live (AND the previous if statement is false, meaning the
             # start time is BEFORE now), then use the live pages.  Note that in
             # the JSON, the live flag might be true during the tech test, which
             # is before the run begins.
             pages = _get_in_run_pages()
-            current_page = int((time_delta // _LIVE_PAGE_TIME_SECS) % len(pages))
-            line1 = pages[current_page](data).center(16)
+            page_time_secs = _LIVE_PAGE_TIME_SECS
         else:
             # The only other possible case is that the live flag is false AND
             # the start time is in the past (either because the run is over for
@@ -247,8 +247,10 @@ class NormalView(BaseView):
             # current year's JSON not existing yet).  That means we're in the
             # offseason.
             pages = _get_offseason_pages()
-            current_page = int((time_delta // _OFFSEASON_PAGE_TIME_SECS) % len(pages))
-            line1 = pages[current_page](data).center(16)
+            page_time_secs = _OFFSEASON_PAGE_TIME_SECS
+
+        current_page = int((time_delta // page_time_secs) % len(pages))
+        line1 = pages[current_page](data).center(16)
 
         # Either way, the second line is the donation total.
         line2 = f"${self._get_displayed_donation_total(data):,.2f}{'.' if needs_service_dot(data) else ''}".center(16)
