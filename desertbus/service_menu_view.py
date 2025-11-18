@@ -11,7 +11,7 @@ from desertbus.simple_animation_view import SimpleAnimationView
 from desertbus.shift_data import Shift, make_view_for_shift
 from desertbus.event_data import Event, make_view_for_event
 import adafruit_character_lcd.character_lcd as characterlcd
-from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat
+from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat, PointsCrashes
 
 logger = logging.getLogger(__name__)
 
@@ -282,6 +282,15 @@ _NODE_STRUCTURE = {
                         { "title": "Night Watch", "value": LcdColor.NIGHT_WATCH },
                         { "title": "Zeta Shift", "value": LcdColor.ZETA_SHIFT },
                         { "title": "Omega Shift", "value": LcdColor.OMEGA_SHIFT },
+                    ]
+                },
+                {
+                    "type": _NodeType.SETTING,
+                    "title": "Points/Crashes",
+                    "key": ConfigKey.POINTS_CRASHES,
+                    "options": [
+                        { "title": "Separate Pages", "value": PointsCrashes.SEPARATE },
+                        { "title": "PT:CR", "value": PointsCrashes.PTCR },
                     ]
                 },
                 {

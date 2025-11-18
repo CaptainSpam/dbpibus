@@ -27,6 +27,8 @@ class ConfigKey(StrEnum):
     TIME_FORMAT = 'TimeFormat'
     # Format of the date, if displayed.
     DATE_FORMAT = 'DateFormat'
+    # Format of points and crashes.
+    POINTS_CRASHES = 'PointsCrashes'
 
 class ShiftAnim(StrEnum):
     """Options for SHOW_SHIFT_ANIM."""
@@ -76,6 +78,13 @@ class DateFormat(StrEnum):
     DDMMYYYY = 'DDMMYYYY'
     MMDDYYYY = 'MMDDYYYY'
 
+class PointsCrashes(StrEnum):
+    """How to format points and crashes."""
+    # As two separate pages.
+    SEPARATE = 'Separate'
+    # As one PT:CR page.
+    PTCR = 'PTCR'
+
 def _make_default_config():
     """Makes a new default config dict."""
     return {
@@ -87,6 +96,7 @@ def _make_default_config():
         ConfigKey.SHOW_TIME_IN_OFFSEASON: ShowTime.NO,
         ConfigKey.TIME_FORMAT: TimeFormat.TWELVE_HOUR,
         ConfigKey.DATE_FORMAT: DateFormat.YYYYMMDD,
+        ConfigKey.POINTS_CRASHES: PointsCrashes.SEPARATE,
     }
 
 _current_config = None
@@ -120,6 +130,8 @@ def _validate_or_raise(key: ConfigKey, value: any):
             TimeFormat(value)
         case ConfigKey.DATE_FORMAT:
             DateFormat(value)
+        case ConfigKey.POINTS_CRASHES:
+            PointsCrashes(value)
         case _:
             raise ValueError(f'Invalid key {key}')
 
@@ -178,6 +190,9 @@ def load_config():
 
             if not _validate(ConfigKey.DATE_FORMAT, new_config[ConfigKey.DATE_FORMAT]):
                 new_config[ConfigKey.DATE_FORMAT] = pristine_defaults[ConfigKey.DATE_FORMAT]
+
+            if not _validate(ConfigKey.POINTS_CRASHES, new_config[ConfigKey.POINTS_CRASHES]):
+                new_config[ConfigKey.POINTS_CRASHES] = pristine_defaults[ConfigKey.POINTS_CRASHES]
 
             # That's it!  Stash this away as our "real" version.
             _current_config = new_config
