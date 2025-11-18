@@ -6,7 +6,7 @@ from desertbus.button_handler import ButtonData
 from desertbus.service_credit_view import ServiceCreditView
 from desertbus.service_menu_view import ServiceMenuView
 from desertbus.shift_data import PACIFIC_ZONEINFO
-from desertbus.config import ConfigKey, get_setting, ShowTime, TimeFormat, DateFormat
+from desertbus.config import ConfigKey, get_setting, ShowTime, TimeFormat, DateFormat, PointsCrashes
 from datetime import datetime
 import time
 import copy
@@ -29,6 +29,12 @@ def _hours_bussed_page(data: VstData) -> str:
 
 def _total_hours_page(data: VstData) -> str:
     return f"Total hours: {data.total_hours}"
+
+def _total_points_page(data: VstData) -> str:
+    return f"Points: {data.points}"
+
+def _total_crashes_page(data: VstData) -> str:
+    return f"Crashes: {data.points}"
 
 def _pt_cr_page(data: VstData) -> str:
     return f"PT:CR: {data.points}:{data.crashes}"
@@ -88,14 +94,16 @@ _LIVE_PAGES = [
     _to_next_hour_page,
     _hours_bussed_page,
     _total_hours_page,
-    _pt_cr_page,
+    _total_points_page,
+    _total_crashes_page,
     _total_splats_page,
     _total_stops_page,
 ]
 
 _OFFSEASON_PAGES = [
     _total_hours_page,
-    _pt_cr_page,
+    _total_points_page,
+    _total_crashes_page,
     _total_splats_page,
     _total_stops_page,
 ]
@@ -118,6 +126,8 @@ _MILLIS_PER_HOUR = _MILLIS_PER_MINUTE * 60
 def _get_in_run_pages() -> list:
     pages = copy.copy(_LIVE_PAGES)
 
+    _resolve_pt_cr(pages)
+
     if get_setting(ConfigKey.SHOW_TIME_IN_RUN) == ShowTime.YES:
         pages.append(_time_date_page)
 
@@ -125,6 +135,8 @@ def _get_in_run_pages() -> list:
 
 def _get_preseason_pages() -> list:
     pages = copy.copy(_PRESEASON_PAGES)
+
+    _resolve_pt_cr(pages)
 
     if get_setting(ConfigKey.SHOW_TIME_IN_PRESEASON) == ShowTime.YES:
         pages.append(_time_date_page)
@@ -134,10 +146,22 @@ def _get_preseason_pages() -> list:
 def _get_offseason_pages() -> list:
     pages = copy.copy(_OFFSEASON_PAGES)
 
+    _resolve_pt_cr(pages)
+
     if get_setting(ConfigKey.SHOW_TIME_IN_OFFSEASON) == ShowTime.YES:
         pages.append(_time_date_page)
 
     return pages
+
+def _resolve_pt_cr(pages: list):
+    if get_setting(ConfigKey.POINTS_CRASHES) == PointsCrashes.PTCR:
+        # Insert PT:CR before where points is...
+        index = pages.index(_total_points_page)
+        pages.insert(index, _pt_cr_page)
+
+        # ...then, delete points and crashes.
+        pages.remove(_total_points_page)
+        pages.remove(_total_crashes_page)
 
 class NormalView(BaseView):
     """The NormalView, NormalView, NormalView, NORMALVIEEEEEEEEEEEEEW!!! is the
