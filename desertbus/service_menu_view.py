@@ -219,7 +219,7 @@ class _TopLevel(_MenuNode):
         return (_ReturnType.STAY_HERE, None)
 
     def get_current_display(self) -> (str, str):
-        return (" dbpibus v0.7.0 ","   Press Menu   ")
+        return (" dbpibus v0.7.6 ","   Press Menu   ")
 
 def _inflate_node(node: dict) -> _MenuNode:
     """Inflates a node from a dict structure."""
