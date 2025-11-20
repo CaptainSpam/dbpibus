@@ -8,12 +8,23 @@ from desertbus.service_menu_view import ServiceMenuView
 from desertbus.shift_data import PACIFIC_ZONEINFO
 from desertbus.config import ConfigKey, get_setting, ShowTime, TimeFormat, DateFormat, PointsCrashes
 from datetime import datetime
+from enum import Enum, auto
 import time
 import copy
 import adafruit_character_lcd.character_lcd as characterlcd
 import logging
 
 logger = logging.getLogger(__name__)
+
+class Season(Enum):
+    """Represents a "season" of Desert Bus.  It made more sense when I started
+    referring to the not-in-run period as the "offseason"."""
+    # The bus is in motion and Desert Bus for Hope is actively running.
+    IN_RUN = auto()
+    # Donations are open for the upcoming run, but the run is not going yet.
+    PRESEASON = auto()
+    # The run is over and we are waiting on the next one.
+    OFFSEASON = auto()
 
 def _route_page(data: VstData) -> str:
     if data.is_going_to_tucson:
@@ -163,6 +174,29 @@ def _resolve_pt_cr(pages: list):
         pages.remove(_total_points_page)
         pages.remove(_total_crashes_page)
 
+def _get_season(data: VstData) -> Season:
+    """Gets the current season."""
+    right_now_millis = time.time() * 1000
+
+    if data.start_time_millis > right_now_millis or (not data.is_live and data.start_time_millis + (_MILLIS_PER_MINUTE * 15) > right_now_millis):
+        # If the start time is AFTER now regardless of the live flag, this must
+        # mean the data we got is an UPCOMING run's time, which means we're in
+        # the preseason.  This also applies if right now is within 15 minutes of
+        # the start time but the live flag is still false.
+        return Season.PRESEASON
+    elif data.is_live:
+        # If we're live (AND the previous if statement is false, meaning the
+        # start time is BEFORE now), then use the live pages.  Note that in the
+        # JSON, the live flag might be true during the tech test, which is
+        # before the run begins.
+        return Season.IN_RUN
+    else:
+        # The only other possible case is that the live flag is false AND the
+        # start time is in the past (either because the run is over for the
+        # current year or we're viewing last year's data due to the current
+        # year's JSON not existing yet).  That means we're in the offseason.
+        return Season.OFFSEASON
+
 class NormalView(BaseView):
     """The NormalView, NormalView, NormalView, NORMALVIEEEEEEEEEEEEEW!!! is the
     default "idle" state of the display.  It displays the current donation total
@@ -184,6 +218,16 @@ class NormalView(BaseView):
         # animation.  This initializes to zero and not self._start_time * 1000
         # to make sure we're starting at the first actual frame, not at init.
         self._last_stabilized_time_millis = 0
+        # The last-known season.  If this changes, we need to reset all page
+        # counters.
+        self._last_known_season = None
+        # The last time a page was changed, in seconds since the epoch.  This
+        # is updated both when the page timer expires and when the user presses
+        # the plus/minus buttons.
+        self._last_page_time_secs = 0
+        # The number of pages that have been advanced since the last reset.
+        # This is modulo'd to determine what page we're actually viewing.
+        self._page_counter = 0
 
     @property
     def priority(self):
@@ -229,6 +273,15 @@ class NormalView(BaseView):
                 to_return = ServiceCreditView(self._lcd)
             elif buttons.select and not self._previous_buttons.select:
                 to_return = ServiceMenuView(self._lcd)
+            elif buttons.minus and not self._previous_buttons.minus:
+                self._page_counter -= 1
+                # Reset the last page time, too!  We want this new page to
+                # display for the full time it should.
+                self._last_page_time_secs = time.time()
+            elif buttons.plus and not self._previous_buttons.plus:
+                self._page_counter += 1
+                # Ditto!
+                self._last_page_time_secs = time.time()
 
         self._previous_buttons = buttons
         return to_return
@@ -238,42 +291,53 @@ class NormalView(BaseView):
         if not isinstance(data, VstData):
             return False
 
-        right_now_millis = time.time() * 1000
+        right_now_secs = time.time()
+        right_now_millis = right_now_secs * 1000
 
         if self._last_stabilized_time_millis == 0:
             # This is the first frame!  Initialize!
             self._last_stabilized_time_millis = right_now_millis
 
         line1 = ''
-        time_delta = time.time() - self._start_time
         pages = []
         page_time_secs = 10
         # First: Are we in-run?  That determines what pages we show.  Then, the
         # specific page we're on depends on elapsed time.
-        if data.start_time_millis > right_now_millis or (not data.is_live and data.start_time_millis + (_MILLIS_PER_MINUTE * 15) > right_now_millis):
-            # If the start time is AFTER now regardless of the live flag, this
-            # must mean the data we got is an UPCOMING run's time, which means
-            # we're in the preseason.  This also applies if right now is within
-            # 15 minutes of the start time but the live flag is still false.
-            pages = _get_preseason_pages()
-            page_time_secs = _OFFSEASON_PAGE_TIME_SECS
-        elif data.is_live:
-            # If we're live (AND the previous if statement is false, meaning the
-            # start time is BEFORE now), then use the live pages.  Note that in
-            # the JSON, the live flag might be true during the tech test, which
-            # is before the run begins.
-            pages = _get_in_run_pages()
-            page_time_secs = _LIVE_PAGE_TIME_SECS
-        else:
-            # The only other possible case is that the live flag is false AND
-            # the start time is in the past (either because the run is over for
-            # the current year or we're viewing last year's data due to the
-            # current year's JSON not existing yet).  That means we're in the
-            # offseason.
-            pages = _get_offseason_pages()
-            page_time_secs = _OFFSEASON_PAGE_TIME_SECS
+        now_season = _get_season(data)
+        match now_season:
+            case Season.PRESEASON:
+                pages = _get_preseason_pages()
+                page_time_secs = _OFFSEASON_PAGE_TIME_SECS
+            case Season.IN_RUN:
+                pages = _get_in_run_pages()
+                page_time_secs = _LIVE_PAGE_TIME_SECS
+            case Season.OFFSEASON:
+                pages = _get_offseason_pages()
+                page_time_secs = _OFFSEASON_PAGE_TIME_SECS
+            case _:
+                raise ValueError(f'Invalid season {now_season}!')
 
-        current_page = int((time_delta // page_time_secs) % len(pages))
+        if not self._last_known_season == now_season:
+            # Uh oh, we've changed seasons.  Reset the page counter!
+            self._page_counter = 0
+            self._last_page_time_secs = right_now_secs
+            self._last_known_season = now_season
+
+        # Determine how many pages should have passed since we last checked.
+        # In normal operation, this should be either zero or one, but we'll keep
+        # the clock running when NormalView is hidden.
+        time_delta = right_now_secs - self._last_page_time_secs
+        page_delta = int(time_delta // page_time_secs)
+
+        if page_delta > 0:
+            # Pages have advanced!  Reset the last page time for next time!
+            self._last_page_time_secs = right_now_secs
+
+        # Advance this many pages.
+        self._page_counter += page_delta
+
+        # Modulo us to the current page, then grab its text.
+        current_page = int(self._page_counter % len(pages))
         line1 = pages[current_page](data).center(16)
 
         # Either way, the second line is the donation total.
