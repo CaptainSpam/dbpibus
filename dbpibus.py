@@ -125,6 +125,7 @@ logger.info('Ready.  Your driver is: JOCKO')
 print('Your driver is: JOCKO')
 
 is_aware_of_dead_fetcher_thread = False
+has_done_initial_omega_check = False
 previous_stats = None
 last_known_lcd_setting = None
 
@@ -167,17 +168,30 @@ try:
             if current_lcd_setting == LcdColor.CURRENT_SHIFT:
                 lcd.color = SCREEN_COLORS[now_shift]
 
-            # Then, ONLY if we're not switching OFF of Omega, do the animation.
-            # It just wouldn't be right to do a transition coming off of the end
-            # of the run.
+            # Just to clarify the logic here, we're pushing a new anim on a
+            # shift change (since now_shift is not the same as current_shift),
+            # but ONLY if:
             #
-            # Also, y'know, check settings to make sure we should be doing this.
+            # 1. The current shift anim setting is ALWAYS, -or-
+            # 2. The current shift anim setting is ONLY_IN_SEASON -and- we have
+            #    stats -and- we know, from those stats, that we are in run (that
+            #    is, that we are fulfilling the ONLY_IN_SEASON requirement),
+            #    -and-
+            # 3. The currently-displayed shift isn't Omega (Omega should
+            #    override the current "actual" shift), -and-
+            # 4. The shift we're about to display (now_shift) is Omega -and-
+            #    we've done the initial Omega check (Omega is a special case;
+            #    since we initialize with the current "actual" shift BEFORE we
+            #    do a data fetch, we'll never start in Omega, meaning if the
+            #    script is started while Omega is live, we would always display
+            #    the Omega anim on startup if we didn't wait for an initial
+            #    check).
             shift_anim_setting = get_setting(ConfigKey.SHOW_SHIFT_ANIM)
             if (shift_anim_setting == ShiftAnim.ALWAYS
                 or (shift_anim_setting == ShiftAnim.ONLY_IN_SEASON
                     and latest_stats is not None
                     and latest_stats.is_live
-                    )) and not current_shift == Shift.OMEGA_SHIFT:
+                    )) and not current_shift == Shift.OMEGA_SHIFT and not (now_shift == Shift.OMEGA_SHIFT and not has_done_initial_omega_check):
                 heapq.heappush(views, make_view_for_shift(lcd, now_shift))
 
             current_shift = now_shift
@@ -224,6 +238,11 @@ try:
             # TODO: Maybe restart the thread?  This really, REALLY shouldn't
             # happen, so there's a chance we're in a super bad state somehow.
             is_aware_of_dead_fetcher_thread = True
+
+        # After all that, if we have stats, make sure the initial omega check
+        # flag is true.
+        if latest_stats is not None and latest_stats.is_omega_shift is not None:
+            has_done_initial_omega_check = True
 
         sleep(0.035)
 except Exception as e:
