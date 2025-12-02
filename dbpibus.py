@@ -172,14 +172,17 @@ try:
             # shift change (since now_shift is not the same as current_shift),
             # but ONLY if:
             #
-            # 1. The current shift anim setting is ALWAYS, -or-
-            # 2. The current shift anim setting is ONLY_IN_SEASON -and- we have
-            #    stats -and- we know, from those stats, that we are in run (that
-            #    is, that we are fulfilling the ONLY_IN_SEASON requirement),
-            #    -and-
-            # 3. The currently-displayed shift isn't Omega (Omega should
+            # 1. We have stats (so we don't transition directly from YDIJ to a
+            #    shift transition in the event that the network takes time to
+            #    connect and the first time sync post-connection pushes us to
+            #    another shift), -and-
+            # 2. The current shift anim setting is ALWAYS, -or-
+            # 3. The current shift anim setting is ONLY_IN_SEASON -and- we know,
+            #    from the stats, that we are in run (that is, that we are
+            #    fulfilling the ONLY_IN_SEASON requirement), -and-
+            # 4. The currently-displayed shift isn't Omega (Omega should
             #    override the current "actual" shift), -and-
-            # 4. The shift we're about to display (now_shift) is Omega -and-
+            # 5. The shift we're about to display (now_shift) is Omega -and-
             #    we've done the initial Omega check (Omega is a special case;
             #    since we initialize with the current "actual" shift BEFORE we
             #    do a data fetch, we'll never start in Omega, meaning if the
@@ -187,11 +190,13 @@ try:
             #    the Omega anim on startup if we didn't wait for an initial
             #    check).
             shift_anim_setting = get_setting(ConfigKey.SHOW_SHIFT_ANIM)
-            if (shift_anim_setting == ShiftAnim.ALWAYS
-                or (shift_anim_setting == ShiftAnim.ONLY_IN_SEASON
-                    and latest_stats is not None
-                    and latest_stats.is_live
-                    )) and not current_shift == Shift.OMEGA_SHIFT and not (now_shift == Shift.OMEGA_SHIFT and not has_done_initial_omega_check):
+            if (latest_stats is not None
+                and (shift_anim_setting == ShiftAnim.ALWAYS
+                    or (shift_anim_setting == ShiftAnim.ONLY_IN_SEASON
+                        and latest_stats.is_live))
+                    and not current_shift == Shift.OMEGA_SHIFT
+                    and not (now_shift == Shift.OMEGA_SHIFT
+                        and not has_done_initial_omega_check)):
                 heapq.heappush(views, make_view_for_shift(lcd, now_shift))
 
             current_shift = now_shift
