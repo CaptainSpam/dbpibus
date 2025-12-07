@@ -1,0 +1,11 @@
+# Obviously, you'd want to change this if you aren't using a RPi Pico 2 as a
+# microcontroller for the NeoPixels, but that's what I'm using, so that's what
+# this file uses.  Also, that's why it's "ttypico".
+
+SUBSYSTEM=="tty", \
+    ATTRS{idVendor}=="2e8a", \
+    ATTRS{idProduct}=="000f", \
+    GROUP="plugdev", \
+    MODE="660", \
+    TAG+="uaccess", \
+    SYMLINK+="ttypico"
