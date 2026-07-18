@@ -11,7 +11,7 @@ int current_idle = SHIFT_INVALID;
 
 void setup() {
   // Fire up some serial!
-  Serial.begin(9600);
+  Serial1.begin(9600);
 
   // NeoPixels start up now, too!  By which I mean they don't start up, they
   // turn off if they were on.
@@ -24,11 +24,21 @@ void loop() {
   // TODO: Everything, really.
 }
 
+// These serial functions are for abstraction purposes.  Y'know, in case I have
+// the bright idea to change what pins (or USB) I'm using for serial again.
+char get_serial_char() {
+  return (char)Serial1.read();
+}
+
+bool serial_available() {
+  return Serial1.available();
+}
+
 void read_serial() {
-  if(Serial.available()) {
+  while(serial_available()) {
     // We got something!  It'll be a single character command.  Further data
     // will be dependent on the command.
-    char command = (char)Serial.read();
+    char command = get_serial_char();
 
     // TODO: Do something with it!  We'll be updating globals with the result of
     // whatever we got.  Remember, in each case we're expecting the next byte to
@@ -40,7 +50,7 @@ void read_serial() {
         break;
       case COMMAND_SET_IDLE_ANIMATION:
         // Next character is what shift we're becoming.  Turn it into an int.
-        char shift = (char)Serial.read();
+        char shift = get_serial_char();
 
         switch(shift) {
           case IDLE_ANIMATION_DAWNGUARD:
