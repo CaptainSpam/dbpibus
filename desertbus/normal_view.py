@@ -147,8 +147,6 @@ def _get_in_run_pages() -> list:
 def _get_preseason_pages() -> list:
     pages = copy.copy(_PRESEASON_PAGES)
 
-    _resolve_pt_cr(pages)
-
     if get_setting(ConfigKey.SHOW_TIME_IN_PRESEASON) == ShowTime.YES:
         pages.append(_time_date_page)
 
