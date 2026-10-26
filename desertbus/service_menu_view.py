@@ -11,7 +11,8 @@ from desertbus.simple_animation_view import SimpleAnimationView
 from desertbus.shift_data import Shift, make_view_for_shift
 from desertbus.event_data import Event, make_view_for_event
 import adafruit_character_lcd.character_lcd as characterlcd
-from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat, PointsCrashes
+from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat, PointsCrashes, IdleLedFade
+import desertbus.serial_dispatcher as serial_dispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -118,12 +119,13 @@ class _ContainerNode(_MenuNode):
 
 class _SettingNode(_MenuNode):
     """A node that represents a config setting."""
-    def __init__(self, title: str, key: ConfigKey, options: list):
+    def __init__(self, title: str, key: ConfigKey, options: list, serial_func = None):
         super().__init__(title)
         self._key = key
         self._options = options
         self._current_index = 0
         self._save_time_millis = 0
+        self._serial_func = serial_func
 
         # Start on whatever the current selection is.
         initial_setting = get_setting(key)
@@ -152,6 +154,9 @@ class _SettingNode(_MenuNode):
             # Aha!  The user wants THIS!
             logger.debug(f'Setting {self._key} to {self._options[self._current_index]['value']}...')
             set_setting(self._key, self._options[self._current_index]['value'])
+            # WAIT!  Do we need to dispatch a serial command with this value?
+            if self._serial_func is not None:
+                self._serial_func(self._options[self._current_index]['value'])
             # Remember when the user saved.  We'll display "Saved!" for a bit.
             self._save_time_millis = time.time() * 1000
             return (_ReturnType.STAY_HERE, None)
@@ -233,7 +238,8 @@ def _inflate_node(node: dict) -> _MenuNode:
             return _SettingNode(
                 title = node["title"],
                 key = node["key"],
-                options = node["options"]
+                options = node["options"],
+                serial_func = node["serial_func"]
             )
         case _NodeType.TESTS:
             return _TestNode(
@@ -292,6 +298,18 @@ _NODE_STRUCTURE = {
                         { "title": "Separate Pages", "value": PointsCrashes.SEPARATE },
                         { "title": "PT:CR", "value": PointsCrashes.PTCR },
                     ]
+                },
+                {
+                    "type": _NodeType.SETTING,
+                    "title": "Idle LED Fade",
+                    "key": ConfigKey.IDLE_LED_FADE,
+                    "options": [
+                        { "title": "Off", "value": IdleLedFade.OFF },
+                        { "title": "Static", "value": IdleLedFade.STATIC },
+                        { "title": "Slow", "value": IdleLedFade.SLOW },
+                        { "title": "Fast", "value": IdleLedFade.FAST },
+                    ],
+                    "serial_func": serial_dispatcher.change_idle_type,
                 },
                 {
                     "type": _NodeType.CONTAINER,

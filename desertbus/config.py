@@ -29,6 +29,8 @@ class ConfigKey(StrEnum):
     DATE_FORMAT = 'DateFormat'
     # Format of points and crashes.
     POINTS_CRASHES = 'PointsCrashes'
+    # How the LEDs should fade when idle.
+    IDLE_LED_FADE = 'IdleLedFade'
 
 class ShiftAnim(StrEnum):
     """Options for SHOW_SHIFT_ANIM."""
@@ -85,6 +87,17 @@ class PointsCrashes(StrEnum):
     # As one PT:CR page.
     PTCR = 'PTCR'
 
+class IdleLedFade(StrEnum):
+    """How the idle LED fades should go."""
+    # The LEDs should just be off when idle.
+    OFF = 'Off'
+    # The LEDs should be on, but shouldn't rotate.
+    STATIC = 'Static'
+    # The LEDs should rotate every minute, and the rotation should be slow.
+    SLOW = 'Slow'
+    # The LEDs should rotate every minute, and the rotation should be fast.
+    FAST = 'Fast'
+
 def _make_default_config():
     """Makes a new default config dict."""
     return {
@@ -97,6 +110,7 @@ def _make_default_config():
         ConfigKey.TIME_FORMAT: TimeFormat.TWELVE_HOUR,
         ConfigKey.DATE_FORMAT: DateFormat.YYYYMMDD,
         ConfigKey.POINTS_CRASHES: PointsCrashes.SEPARATE,
+        ConfigKey.IDLE_LED_FADE: IdleLedFade.SLOW,
     }
 
 _current_config = None
@@ -132,6 +146,8 @@ def _validate_or_raise(key: ConfigKey, value: any):
             DateFormat(value)
         case ConfigKey.POINTS_CRASHES:
             PointsCrashes(value)
+        case ConfigKey.IDLE_LED_FADE:
+            IdleLedFade(value)
         case _:
             raise ValueError(f'Invalid key {key}')
 
@@ -193,6 +209,9 @@ def load_config():
 
             if not _validate(ConfigKey.POINTS_CRASHES, new_config[ConfigKey.POINTS_CRASHES]):
                 new_config[ConfigKey.POINTS_CRASHES] = pristine_defaults[ConfigKey.POINTS_CRASHES]
+
+            if not _validate(ConfigKey.IDLE_LED_FADE, new_config[ConfigKey.IDLE_LED_FADE]):
+                new_config[ConfigKey.IDLE_LED_FADE] = pristine_defaults[ConfigKey.IDLE_LED_FADE]
 
             # That's it!  Stash this away as our "real" version.
             _current_config = new_config
