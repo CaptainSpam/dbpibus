@@ -18,14 +18,14 @@ def init_serial():
     nothing.  If something goes wrong, SerialException will be raised."""
     global _ser
 
-    if is_serial_ready():
+    if not is_serial_ready():
         _ser = serial.Serial('/dev/serial0', 9600, timeout = 5)
 
 def close_serial():
     """Closes serial communications.  If serial isn't ready, does nothing."""
     global _ser
 
-    if not is_serial_ready():
+    if is_serial_ready():
         try:
             _ser.close()
         except:
