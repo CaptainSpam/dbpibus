@@ -16,14 +16,14 @@ int last_light = -1;
 bool showing_lights = true;
 
 int current_idle = SHIFT_INVALID;
-int idle_type = IDLE_STATIC;
+int idle_type = IDLE_SLOW;
 
 char current_command = ' ';
+char current_config = ' ';
 
 void setup() {
   // TODO: Remove the serial monitor?
   Serial.begin(9600);
-  Serial.println("SETUP COMPLETE");
 
   // Fire up some serial!
   Serial1.begin(9600);
@@ -31,6 +31,8 @@ void setup() {
   // NeoPixels start up now, too!  By which I mean they don't start up, they
   // turn off if they were on.
   strip.begin();
+  // TODO: The rainbow is just to confirm I'm sending LED data correctly; this
+  // will be removed once I've got both cabin and ground effect lights working.
   strip.rainbow(0, 3);
   strip.show();
   strip.setBrightness(50);
@@ -106,18 +108,65 @@ void read_serial() {
             break;
         }
 
-        // Valid or not, reset the command back to a space.
-        current_command = ' ';
+        // Valid or not, reset.
+        reset_inputs();
+        break;
+      }
+      case COMMAND_UPDATE_CONFIG: {
+        if(current_config == ' ') {
+          // This should be the option being changed.  Right now there's only
+          // the one, but just to be sure...
+          switch(input) {
+            case CONFIG_IDLE_TYPE:
+              current_config = input;
+              break;
+            default:
+              // Invalid!
+              reset_inputs();
+          }
+
+          // Either way, wait for the next input.
+          return;
+        }
+
+        // So THIS input should be the specific option for the given config.
+        switch(current_config) {
+          case CONFIG_IDLE_TYPE: {
+            switch(input) {
+              case IDLE_TYPE_OFF:
+                idle_type = IDLE_OFF;
+                break;
+              case IDLE_TYPE_STATIC:
+                idle_type = IDLE_STATIC;
+                break;
+              case IDLE_TYPE_SLOW:
+                idle_type = IDLE_SLOW;
+                break;
+              case IDLE_TYPE_FAST:
+                idle_type = IDLE_FAST;
+                break;
+            }
+
+            reset_inputs();
+            break;
+          }
+        }
+
+        break;
       }
       default:
         // We shouldn't get here once all the commands are coded, but if we
-        // do, just reset the command.
-        current_command = ' ';
+        // do, just reset.
+        reset_inputs();
     }
   }
 }
 
-
+/** Resets the serial communication state machine. */
+void reset_inputs() {
+  current_command = ' ';
+  current_config = ' ';
+}
 
 // The time at which the last idle cycle began.  Used to track when we need to
 // start another color fade.
