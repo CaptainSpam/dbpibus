@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from desertbus.shift_data import Shift
+import serial
 
 _ser = None
 
@@ -17,14 +18,14 @@ def init_serial():
     nothing.  If something goes wrong, SerialException will be raised."""
     global _ser
 
-    if _ser is not None:
+    if is_serial_ready():
         _ser = serial.Serial('/dev/serial0', 9600, timeout = 5)
 
 def close_serial():
     """Closes serial communications.  If serial isn't ready, does nothing."""
     global _ser
 
-    if _ser is not None:
+    if not is_serial_ready():
         try:
             _ser.close()
         except:
@@ -57,4 +58,4 @@ def _dispatch(to_write):
     a try block, though I don't know what you'd do if something goes wrong."""
     if _ser is not None:
         # Out it goes!
-        _ser.write(to_write.encode('utf-8'))
+        _ser.write(to_write.encode())
