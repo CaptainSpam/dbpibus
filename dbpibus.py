@@ -24,8 +24,10 @@ from desertbus.button_handler import ButtonHandler
 from desertbus.event_data import make_views_for_events
 from desertbus.config import load_config, get_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim
 from desertbus.base_view import BaseView
+import desertbus.serial_dispatcher as serial_dispatcher
 import signal
 import sys
+import serial
 
 # Everybody do the interrupt!
 def interrupt_handler(signal, frame):
@@ -59,6 +61,12 @@ def config_shift_to_data_shift(config_shift: LcdColor) -> Shift:
             # Whoops, you should have handled this before you called this.
             raise ValueError(f'Invalid config-to-shift value {config_shift}')
 
+def set_shift_colors(shift: Shift):
+    """Sets a new shift color.  This will both set the LCD's color and dispatch
+    a serial message to update the idle colors on the LEDs."""
+    lcd.color = SCREEN_COLORS[current_shift]
+    serial_dispatcher.change_shift(current_shift)
+
 # Get a logger going.
 log_file = f"{os.path.expanduser('~')}/dbpibus.log"
 log_format = logging.Formatter('%(asctime)s %(levelname)s [%(threadName)s] [%(module)s] %(funcName)s(%(lineno)d): %(message)s')
@@ -73,6 +81,10 @@ logger.addHandler(handler)
 
 # Say hello to the nice people, dbpibus.
 logger.info("Welcome to CaptainSpam's Desert Bus for Hope Home Verisimulator Project.")
+
+# Wake up serial.
+logger.info("Initializing the serial object...")
+serial_dispatcher.init_serial()
 
 # Set up the LCD.
 logger.info("Initializing everything for a 2x16 LCD...")
@@ -100,7 +112,7 @@ lcd = characterlcd.Character_LCD_RGB(lcd_rs, lcd_en, lcd_d4, lcd_d5, lcd_d6,
 lcd.clear()
 current_shift = get_current_shift()
 logger.info(f'Starting off with {current_shift}...')
-lcd.color = SCREEN_COLORS[current_shift]
+set_shift_colors(current_shift)
 
 # And a starter message until the data comes in.
 lcd.message = "Your driver is:".center(16) + "\n" + "JOCKO".center(16)
@@ -141,12 +153,12 @@ try:
             if current_lcd_setting == LcdColor.CURRENT_SHIFT:
                 # If it's the current shift, work out what it is.
                 if latest_stats is not None and latest_stats.is_omega_shift:
-                    lcd.color = SCREEN_COLORS[Shift.OMEGA_SHIFT]
+                    set_shift_colors(SCREEN_COLORS[Shift.OMEGA_SHIFT])
                 else:
-                    lcd.color = SCREEN_COLORS[get_current_shift()]
+                    set_shift_colors(SCREEN_COLORS[get_current_shift()])
             else:
                 # If the setting is just a single shift, set it now.
-                lcd.color = SCREEN_COLORS[config_shift_to_data_shift(current_lcd_setting)]
+                set_shift_colors(SCREEN_COLORS[config_shift_to_data_shift(current_lcd_setting)])
 
         # Check if we're in Omega yet.  Y'know, if there's stats at all.  Note
         # that if the Omega flag is None, *don't change out of Omega*.  None
@@ -166,7 +178,7 @@ try:
 
             # Set the screen color first (unless there's an override in config).
             if current_lcd_setting == LcdColor.CURRENT_SHIFT:
-                lcd.color = SCREEN_COLORS[now_shift]
+                set_shift_colors(SCREEN_COLORS[now_shift])
 
             # Just to clarify the logic here, we're pushing a new anim on a
             # shift change (since now_shift is not the same as current_shift),
