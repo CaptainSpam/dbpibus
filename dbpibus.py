@@ -262,6 +262,9 @@ try:
         if latest_stats is not None and latest_stats.is_omega_shift is not None:
             has_done_initial_omega_check = True
 
+        # Check for an incoming config request from the Pico, too.
+        serial_dispatcher.handle_config_request(current_shift)
+
         sleep(0.035)
 except Exception as e:
     # Welp, we're hosed.

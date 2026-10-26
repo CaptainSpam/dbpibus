@@ -35,6 +35,11 @@ void setup() {
   strip.rainbow(0, 3);
   strip.setBrightness(50);
   strip.show();
+
+  // Then, ask for the config to be re-sent, if the Zero's awake at this point.
+  // Realistically, the only way it won't is if this is a dev situation, as the
+  // it absolutely won't finish booting before the Pico starts running.
+  request_config();
 }
 
 void loop() {
@@ -45,6 +50,10 @@ void loop() {
   // TODO: Events take priority, so if there's one waiting, this should wait its
   // turn.
   do_idle_animation();
+}
+
+void request_config() {
+  Serial1.write(REQUEST_CONFIG);
 }
 
 // These serial functions are for abstraction purposes.  Y'know, in case I have

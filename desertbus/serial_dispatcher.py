@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 _ser = None
 
 # These constants all match serial_constants.h on the Pico side of things.
+_REQUEST_CONFIG = '?'
+
 _COMMAND_SET_IDLE_ANIMATION = 'I'
 _COMMAND_UPDATE_CONFIG = 'U'
 
@@ -49,6 +51,28 @@ def close_serial():
 def is_serial_ready() -> bool:
     """Returns true if serial is ready to go, false if it isn't."""
     return _ser is not None
+
+def handle_config_request(shift: Shift):
+    """Checks for an incoming config request from the Pico and acts
+    accordingly."""
+    if not is_serial_ready():
+        logger.error('Tried to check for config requests, but _ser was None?')
+        return
+
+    while _ser.in_waiting > 0:
+        try:
+            incoming = _ser.read(1).decode()
+        except UnicodeDecodeError:
+            # Ignore decoder errors.  Anything can happen there serial-wise.
+            # The Pico screams a lot while it flashes new data.
+            continue
+
+        if incoming == _REQUEST_CONFIG:
+            # Aha!  The Pico needs our help!  Dispatch the config AND the
+            # current shift.
+            logger.info('Received request for config from the Pico, dispatching now...')
+            change_shift(shift)
+            dispatch_config()
 
 def dispatch_config():
     """Dispatches all relevant config settings to serial."""
