@@ -28,14 +28,13 @@ void setup() {
   // Fire up some serial!
   Serial1.begin(9600);
 
-  // NeoPixels start up now, too!  By which I mean they don't start up, they
-  // turn off if they were on.
+  // NeoPixels start up now, too!
   strip.begin();
-  // TODO: The rainbow is just to confirm I'm sending LED data correctly; this
-  // will be removed once I've got both cabin and ground effect lights working.
+  // The rainbow is just to confirm I'm sending LED data correctly; this should
+  // get overwritten as soon as the Zero boots up and sends data.
   strip.rainbow(0, 3);
-  strip.show();
   strip.setBrightness(50);
+  strip.show();
 }
 
 void loop() {
@@ -178,9 +177,16 @@ int cycle_count = 0;
 void do_idle_animation() {
   int now_millis = millis();
 
+  if(current_idle == SHIFT_INVALID) {
+    // If we don't have shift data yet, ignore it.  This will keep it in rainbow
+    // mode until the first update hits, which will be a pretty good indicator
+    // that data hasn't arrived.
+    return;
+  }
+
   if(idle_type == IDLE_OFF) {
-    // Idle's off (or we don't have shift data yet), so turn off all the lights
-    // and ignore the rest of the function.
+    // Idle's off, so turn off all the lights and ignore the rest of the
+    // function.
     strip.fill();
     strip.show();
     last_idle_cycle_began = now_millis;
