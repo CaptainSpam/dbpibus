@@ -27,7 +27,6 @@ from desertbus.base_view import BaseView
 import desertbus.serial_dispatcher as serial_dispatcher
 import signal
 import sys
-import serial
 
 # Everybody do the interrupt!
 def interrupt_handler(signal, frame):
@@ -64,8 +63,8 @@ def config_shift_to_data_shift(config_shift: LcdColor) -> Shift:
 def set_shift_colors(shift: Shift):
     """Sets a new shift color.  This will both set the LCD's color and dispatch
     a serial message to update the idle colors on the LEDs."""
-    lcd.color = SCREEN_COLORS[current_shift]
-    serial_dispatcher.change_shift(current_shift)
+    lcd.color = SCREEN_COLORS[shift]
+    serial_dispatcher.change_shift(shift)
 
 # Get a logger going.
 log_file = f"{os.path.expanduser('~')}/dbpibus.log"
@@ -153,12 +152,12 @@ try:
             if current_lcd_setting == LcdColor.CURRENT_SHIFT:
                 # If it's the current shift, work out what it is.
                 if latest_stats is not None and latest_stats.is_omega_shift:
-                    set_shift_colors(SCREEN_COLORS[Shift.OMEGA_SHIFT])
+                    set_shift_colors(Shift.OMEGA_SHIFT)
                 else:
-                    set_shift_colors(SCREEN_COLORS[get_current_shift()])
+                    set_shift_colors(get_current_shift())
             else:
                 # If the setting is just a single shift, set it now.
-                set_shift_colors(SCREEN_COLORS[config_shift_to_data_shift(current_lcd_setting)])
+                set_shift_colors(config_shift_to_data_shift(current_lcd_setting))
 
         # Check if we're in Omega yet.  Y'know, if there's stats at all.  Note
         # that if the Omega flag is None, *don't change out of Omega*.  None
@@ -178,7 +177,7 @@ try:
 
             # Set the screen color first (unless there's an override in config).
             if current_lcd_setting == LcdColor.CURRENT_SHIFT:
-                set_shift_colors(SCREEN_COLORS[now_shift])
+                set_shift_colors(now_shift)
 
             # Just to clarify the logic here, we're pushing a new anim on a
             # shift change (since now_shift is not the same as current_shift),
