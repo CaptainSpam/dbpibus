@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from desertbus.shift_data import Shift
-from desertbus.config import IdleLedFade
+from desertbus.config import get_setting, ConfigKey, IdleLedFade
 import logging
 import serial
 
@@ -49,6 +49,12 @@ def close_serial():
 def is_serial_ready() -> bool:
     """Returns true if serial is ready to go, false if it isn't."""
     return _ser is not None
+
+def dispatch_config():
+    """Dispatches all relevant config settings to serial."""
+    logger.info('Dispatching all config data...')
+    # There's just the one setting for now, but, y'know, still.
+    change_idle_type(get_setting(ConfigKey.IDLE_LED_FADE))
 
 def change_shift(shift: Shift):
     """Sends the command to change the current idle colors for the shift."""

@@ -125,7 +125,9 @@ previous_buttons = None
 views = []
 
 # Init config now, while we're at it.
+logger.info("Loading config...")
 load_config()
+serial_dispatcher.dispatch_config()
 
 # Kick the thread into action.
 t = FetcherThread('FetcherThread')
