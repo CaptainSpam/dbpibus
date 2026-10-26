@@ -17,7 +17,7 @@ const int COLOR_OFF = Adafruit_NeoPixel::Color(0, 0, 0);
 // The shift-specific colors.  Note, there is no single color for Omega;
 // that'll be represented by all four colors.
 const int COLOR_DAWNGUARD = Adafruit_NeoPixel::Color(156, 73, 12);
-const int COLOR_ALPHAFLIGHT = Adafruit_NeoPixel::Color(176, 34, 42);
+const int COLOR_ALPHAFLIGHT = Adafruit_NeoPixel::Color(105, 3, 9);
 const int COLOR_NIGHTWATCH = Adafruit_NeoPixel::Color(21, 115, 182);
 const int COLOR_ZETASHIFT = Adafruit_NeoPixel::Color(41, 12, 77);
 
