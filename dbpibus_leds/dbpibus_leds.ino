@@ -15,8 +15,8 @@ const int CABIN_LIGHT_COUNT = 12;
 int last_light = -1;
 bool showing_lights = true;
 
-int current_idle = SHIFT_INVALID;
-int idle_type = IDLE_SLOW;
+Shift current_idle = Shift::SHIFT_INVALID;
+IdleType idle_type = IdleType::IDLE_SLOW;
 
 char current_command = ' ';
 char current_config = ' ';
@@ -100,19 +100,19 @@ void read_serial() {
       case COMMAND_SET_IDLE_ANIMATION: {
         switch(input) {
           case IDLE_ANIMATION_DAWNGUARD:
-            current_idle = SHIFT_DAWNGUARD;
+            current_idle = Shift::SHIFT_DAWNGUARD;
             break;
           case IDLE_ANIMATION_ALPHAFLIGHT:
-            current_idle = SHIFT_ALPHAFLIGHT;
+            current_idle = Shift::SHIFT_ALPHAFLIGHT;
             break;
           case IDLE_ANIMATION_NIGHTWATCH:
-            current_idle = SHIFT_NIGHTWATCH;
+            current_idle = Shift::SHIFT_NIGHTWATCH;
             break;
           case IDLE_ANIMATION_ZETASHIFT:
-            current_idle = SHIFT_ZETASHIFT;
+            current_idle = Shift::SHIFT_ZETASHIFT;
             break;
           case IDLE_ANIMATION_OMEGASHIFT:
-            current_idle = SHIFT_OMEGASHIFT;
+            current_idle = Shift::SHIFT_OMEGASHIFT;
             break;
         }
 
@@ -142,16 +142,16 @@ void read_serial() {
           case CONFIG_IDLE_TYPE: {
             switch(input) {
               case IDLE_TYPE_OFF:
-                idle_type = IDLE_OFF;
+                idle_type = IdleType::IDLE_OFF;
                 break;
               case IDLE_TYPE_STATIC:
-                idle_type = IDLE_STATIC;
+                idle_type = IdleType::IDLE_STATIC;
                 break;
               case IDLE_TYPE_SLOW:
-                idle_type = IDLE_SLOW;
+                idle_type = IdleType::IDLE_SLOW;
                 break;
               case IDLE_TYPE_FAST:
-                idle_type = IDLE_FAST;
+                idle_type = IdleType::IDLE_FAST;
                 break;
             }
 
@@ -186,14 +186,14 @@ int cycle_count = 0;
 void do_idle_animation() {
   int now_millis = millis();
 
-  if(current_idle == SHIFT_INVALID) {
+  if(current_idle == Shift::SHIFT_INVALID) {
     // If we don't have shift data yet, ignore it.  This will keep it in rainbow
     // mode until the first update hits, which will be a pretty good indicator
     // that data hasn't arrived.
     return;
   }
 
-  if(idle_type == IDLE_OFF) {
+  if(idle_type == IdleType::IDLE_OFF) {
     // Idle's off, so turn off all the lights and ignore the rest of the
     // function.
     strip.fill();
@@ -205,7 +205,7 @@ void do_idle_animation() {
   int shift_colors[4];
   get_shift_colors(current_idle, shift_colors, 4);
 
-  if(idle_type == IDLE_STATIC) {
+  if(idle_type == IdleType::IDLE_STATIC) {
     // Idle's static, so just fill it with the necessary colors.
     for(int i = 0; i < CABIN_LIGHT_COUNT; i++) {
       strip.setPixelColor(i, shift_colors[i % IDLE_COLORS_ARR_LEN]);
@@ -225,7 +225,7 @@ void do_idle_animation() {
   } else {
     // We're somewhere in the cycle.  Let's figure out how much.
     int cycle_time = IDLE_ROTATE_SLOW_TIME_MILLIS;
-    if(idle_type == IDLE_FAST) cycle_time = IDLE_ROTATE_FAST_TIME_MILLIS;
+    if(idle_type == IdleType::IDLE_FAST) cycle_time = IDLE_ROTATE_FAST_TIME_MILLIS;
 
     // I hope these values are named clearly enough.
     int this_fade_ends = last_idle_cycle_began + IDLE_CYCLE_TIME_MILLIS + cycle_time;

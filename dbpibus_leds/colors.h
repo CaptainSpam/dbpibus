@@ -1,5 +1,7 @@
 #include <Adafruit_NeoPixel.h>
 
+#include "enum_constants.h"
+
 /*!
   @file
     The various static colors used throughout the light shows.
@@ -49,4 +51,4 @@ int blend_colors(int color_a, int color_b, float amount);
  * @param arr an array into which the shift colors will be written
  * @param size the size of the array
  */
-void get_shift_colors(int shift, int *arr, int size);
+void get_shift_colors(Shift shift, int *arr, int size);

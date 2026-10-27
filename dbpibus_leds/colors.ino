@@ -1,6 +1,8 @@
 #include <Adafruit_NeoPixel.h>
 
-void get_shift_colors(int shift, int *arr, int size) {
+#include "enum_constants.h"
+
+void get_shift_colors(Shift shift, int *arr, int size) {
   // So my C/C++ is a bit rusty, which is why this is kinda jank, but I THINK
   // this is a reasonable way to populate an array using values from a choice of
   // five different arrays...
@@ -8,19 +10,19 @@ void get_shift_colors(int shift, int *arr, int size) {
     int in = i % IDLE_COLORS_ARR_LEN;
 
     switch(shift) {
-      case SHIFT_DAWNGUARD:
+      case Shift::SHIFT_DAWNGUARD:
         arr[in] = IDLE_COLORS_DAWNGUARD[in];
         break;
-      case SHIFT_ALPHAFLIGHT:
+      case Shift::SHIFT_ALPHAFLIGHT:
         arr[in] = IDLE_COLORS_ALPHAFLIGHT[in];
         break;
-      case SHIFT_NIGHTWATCH:
+      case Shift::SHIFT_NIGHTWATCH:
         arr[in] = IDLE_COLORS_NIGHTWATCH[in];
         break;
-      case SHIFT_ZETASHIFT:
+      case Shift::SHIFT_ZETASHIFT:
         arr[in] = IDLE_COLORS_ZETASHIFT[in];
         break;
-      case SHIFT_OMEGASHIFT:
+      case Shift::SHIFT_OMEGASHIFT:
         arr[in] = IDLE_COLORS_OMEGASHIFT[in];
         break;
       default:
