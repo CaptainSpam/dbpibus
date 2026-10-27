@@ -178,13 +178,13 @@ void reset_inputs() {
 
 // The time at which the last idle cycle began.  Used to track when we need to
 // start another color fade.
-int last_idle_cycle_began = 0;
+unsigned long last_idle_cycle_began = 0;
 // How many cycles we've gone.  This is modulo'd to get the light order when we
 // aren't actively fading colors.
 int cycle_count = 0;
 
 void do_idle_animation() {
-  int now_millis = millis();
+  unsigned long now_millis = millis();
 
   if(current_idle == Shift::SHIFT_INVALID) {
     // If we don't have shift data yet, ignore it.  This will keep it in rainbow
@@ -214,7 +214,7 @@ void do_idle_animation() {
     return;
   }
 
-  int time_since_last_cycle = now_millis - last_idle_cycle_began;
+  unsigned long time_since_last_cycle = now_millis - last_idle_cycle_began;
 
   if(time_since_last_cycle < IDLE_CYCLE_TIME_MILLIS) {
     // We're in the static part of the cycle.
@@ -228,7 +228,7 @@ void do_idle_animation() {
     if(idle_type == IdleType::IDLE_FAST) cycle_time = IDLE_ROTATE_FAST_TIME_MILLIS;
 
     // I hope these values are named clearly enough.
-    int this_fade_ends = last_idle_cycle_began + IDLE_CYCLE_TIME_MILLIS + cycle_time;
+    unsigned long this_fade_ends = last_idle_cycle_began + IDLE_CYCLE_TIME_MILLIS + cycle_time;
 
     // Calculate the percent of time that's passed since this fade began and how
     // long it should last.  This WILL likely wind up being over 1.0 eventually;
