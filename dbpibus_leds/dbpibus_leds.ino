@@ -11,12 +11,14 @@ Adafruit_NeoPixel strip(NEOPIXEL_STRAND_LENGTH, NEOPIXEL_PIN);
 // Number of lights in the cabin of the bus.  Anything past this is assumed to
 // be ground effect lights.
 const int CABIN_LIGHT_COUNT = 12;
+const int GROUND_EFFECTS_LIGHT_COUNT = NEOPIXEL_STRAND_LENGTH - CABIN_LIGHT_COUNT;
 
 int last_light = -1;
 bool showing_lights = true;
 
-Shift current_idle = Shift::SHIFT_INVALID;
-IdleType idle_type = IdleType::IDLE_SLOW;
+Shift current_idle = Shift::INVALID;
+IdleType idle_type = IdleType::SLOW;
+GroundEffects ground_effects = GroundEffects::MATCH_IDLE;
 
 char current_command = ' ';
 char current_config = ' ';
@@ -100,19 +102,19 @@ void read_serial() {
       case COMMAND_SET_IDLE_ANIMATION: {
         switch(input) {
           case IDLE_ANIMATION_DAWNGUARD:
-            current_idle = Shift::SHIFT_DAWNGUARD;
+            current_idle = Shift::DAWNGUARD;
             break;
           case IDLE_ANIMATION_ALPHAFLIGHT:
-            current_idle = Shift::SHIFT_ALPHAFLIGHT;
+            current_idle = Shift::ALPHAFLIGHT;
             break;
           case IDLE_ANIMATION_NIGHTWATCH:
-            current_idle = Shift::SHIFT_NIGHTWATCH;
+            current_idle = Shift::NIGHTWATCH;
             break;
           case IDLE_ANIMATION_ZETASHIFT:
-            current_idle = Shift::SHIFT_ZETASHIFT;
+            current_idle = Shift::ZETASHIFT;
             break;
           case IDLE_ANIMATION_OMEGASHIFT:
-            current_idle = Shift::SHIFT_OMEGASHIFT;
+            current_idle = Shift::OMEGASHIFT;
             break;
         }
 
@@ -142,16 +144,16 @@ void read_serial() {
           case CONFIG_IDLE_TYPE: {
             switch(input) {
               case IDLE_TYPE_OFF:
-                idle_type = IdleType::IDLE_OFF;
+                idle_type = IdleType::OFF;
                 break;
               case IDLE_TYPE_STATIC:
-                idle_type = IdleType::IDLE_STATIC;
+                idle_type = IdleType::STATIC;
                 break;
               case IDLE_TYPE_SLOW:
-                idle_type = IdleType::IDLE_SLOW;
+                idle_type = IdleType::SLOW;
                 break;
               case IDLE_TYPE_FAST:
-                idle_type = IdleType::IDLE_FAST;
+                idle_type = IdleType::FAST;
                 break;
             }
 
@@ -186,46 +188,104 @@ int cycle_count = 0;
 void do_idle_animation() {
   unsigned long now_millis = millis();
 
-  if(current_idle == Shift::SHIFT_INVALID) {
+  bool advance_cycle = do_cabin_lights(now_millis, idle_type, current_idle);
+  do_ground_effects(now_millis, ground_effects, idle_type, current_idle);
+
+  // Apply whatever just happened.
+  strip.show();
+
+  // Finally, if we've completed the fade, reset the clock.
+  if(advance_cycle) {
+    last_idle_cycle_began = now_millis;
+    cycle_count++;
+  }
+}
+
+bool do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) {
+  if(shift == Shift::INVALID) {
     // If we don't have shift data yet, ignore it.  This will keep it in rainbow
     // mode until the first update hits, which will be a pretty good indicator
     // that data hasn't arrived.
-    return;
+    return false;
   }
 
-  if(idle_type == IdleType::IDLE_OFF) {
+  if(idle_type == IdleType::OFF) {
     // Idle's off, so turn off all the lights and ignore the rest of the
     // function.
-    strip.fill();
-    strip.show();
-    last_idle_cycle_began = now_millis;
-    return;
+    strip.fill(COLOR_OFF, 0, CABIN_LIGHT_COUNT);
+    return false;
   }
 
   int shift_colors[4];
-  get_shift_colors(current_idle, shift_colors, 4);
+  get_shift_colors(shift, shift_colors, 4);
 
-  if(idle_type == IdleType::IDLE_STATIC) {
+  if(idle_type == IdleType::STATIC) {
     // Idle's static, so just fill it with the necessary colors.
     for(int i = 0; i < CABIN_LIGHT_COUNT; i++) {
       strip.setPixelColor(i, shift_colors[i % IDLE_COLORS_ARR_LEN]);
     }
-    strip.show();
+    return false;
+  }
+
+  if(idle_type == IdleType::FAST || idle_type == IdleType::SLOW) {
+    return do_blended_lights(0, CABIN_LIGHT_COUNT - 1, now_millis, shift_colors, 4);
+  }
+
+  // We shouldn't get here, but if we bottom out of the enum, return false.
+  return false;
+}
+
+
+void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, IdleType idle_type, Shift shift) {
+  if(shift == Shift::INVALID) {
+    // If we don't have shift data yet, ignore it, just like in idle.
     return;
   }
 
+  if(ground_effects == GroundEffects::OFF) {
+    // Turn 'em off.
+    strip.fill(COLOR_OFF, CABIN_LIGHT_COUNT, GROUND_EFFECTS_LIGHT_COUNT);
+    return;
+  }
+
+  int shift_colors[4];
+  get_shift_colors(shift, shift_colors, 4);
+
+  if(ground_effects == GroundEffects::MATCH_IDLE) {
+    // In MATCH_IDLE mode, we basically repeat most of the logic for idle.
+    if(idle_type == IdleType::OFF) {
+      // Idle's off, so turn off the ground lights.
+      strip.fill(COLOR_OFF, CABIN_LIGHT_COUNT, GROUND_EFFECTS_LIGHT_COUNT);
+      return;
+    }
+
+    if(idle_type == IdleType::STATIC) {
+      // Idle's static, so just fill it with the necessary colors.
+      for(int i = CABIN_LIGHT_COUNT; i < NEOPIXEL_STRAND_LENGTH; i++) {
+        strip.setPixelColor(i, shift_colors[i % IDLE_COLORS_ARR_LEN]);
+      }
+      return;
+    }
+
+    if(idle_type == IdleType::FAST || idle_type == IdleType::SLOW) {
+      do_blended_lights(CABIN_LIGHT_COUNT, NEOPIXEL_STRAND_LENGTH - 1, now_millis, shift_colors, 4);
+    }
+  }
+}
+
+bool do_blended_lights(int start, int end, unsigned long now_millis, const int *colors, int color_size) {
   unsigned long time_since_last_cycle = now_millis - last_idle_cycle_began;
 
   if(time_since_last_cycle < IDLE_CYCLE_TIME_MILLIS) {
     // We're in the static part of the cycle.
-    for(int i = 0; i < CABIN_LIGHT_COUNT; i++) {
-      strip.setPixelColor(i, shift_colors[(i + cycle_count) % IDLE_COLORS_ARR_LEN]);
+    for(int i = start; i <= end; i++) {
+      strip.setPixelColor(i, colors[(i + cycle_count) % color_size]);
     }
-    strip.show();
+    return false;
   } else {
     // We're somewhere in the cycle.  Let's figure out how much.
     int cycle_time = IDLE_ROTATE_SLOW_TIME_MILLIS;
-    if(idle_type == IdleType::IDLE_FAST) cycle_time = IDLE_ROTATE_FAST_TIME_MILLIS;
+    if(idle_type == IdleType::FAST) cycle_time = IDLE_ROTATE_FAST_TIME_MILLIS;
 
     // I hope these values are named clearly enough.
     unsigned long this_fade_ends = last_idle_cycle_began + IDLE_CYCLE_TIME_MILLIS + cycle_time;
@@ -237,22 +297,18 @@ void do_idle_animation() {
 
     // Then, build up a new array of blended colors.
     int faded_colors[4] = {
-      blend_colors(shift_colors[0], shift_colors[1], amount),
-      blend_colors(shift_colors[1], shift_colors[2], amount),
-      blend_colors(shift_colors[2], shift_colors[3], amount),
-      blend_colors(shift_colors[3], shift_colors[0], amount)
+      blend_colors(colors[0], colors[1], amount),
+      blend_colors(colors[1], colors[2], amount),
+      blend_colors(colors[2], colors[3], amount),
+      blend_colors(colors[3], colors[0], amount)
     };
 
     // NOW we can display them!
-    for(int i = 0; i < CABIN_LIGHT_COUNT; i++) {
+    for(int i = start; i <= end; i++) {
       strip.setPixelColor(i, faded_colors[(i + cycle_count) % IDLE_COLORS_ARR_LEN]);
     }
-    strip.show();
 
-    // Finally, if we've completed the fade, reset the clock.
-    if(amount >= 1.0) {
-      last_idle_cycle_began = now_millis;
-      cycle_count++;
-    }
+    // Do we need to update the cycle count?  Let's find out!
+    return amount >= 1.0;
   }
 }

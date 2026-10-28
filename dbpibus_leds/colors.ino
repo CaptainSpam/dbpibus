@@ -10,19 +10,19 @@ void get_shift_colors(Shift shift, int *arr, int size) {
     int in = i % IDLE_COLORS_ARR_LEN;
 
     switch(shift) {
-      case Shift::SHIFT_DAWNGUARD:
+      case Shift::DAWNGUARD:
         arr[in] = IDLE_COLORS_DAWNGUARD[in];
         break;
-      case Shift::SHIFT_ALPHAFLIGHT:
+      case Shift::ALPHAFLIGHT:
         arr[in] = IDLE_COLORS_ALPHAFLIGHT[in];
         break;
-      case Shift::SHIFT_NIGHTWATCH:
+      case Shift::NIGHTWATCH:
         arr[in] = IDLE_COLORS_NIGHTWATCH[in];
         break;
-      case Shift::SHIFT_ZETASHIFT:
+      case Shift::ZETASHIFT:
         arr[in] = IDLE_COLORS_ZETASHIFT[in];
         break;
-      case Shift::SHIFT_OMEGASHIFT:
+      case Shift::OMEGASHIFT:
         arr[in] = IDLE_COLORS_OMEGASHIFT[in];
         break;
       default:

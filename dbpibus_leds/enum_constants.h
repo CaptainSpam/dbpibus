@@ -9,17 +9,17 @@
 /** The current driving shift. */
 enum class Shift {
   /** Dawn Guard (6a-12n). */
-  SHIFT_DAWNGUARD,
+  DAWNGUARD,
   /** Alpha Flight (12n-6p). */
-  SHIFT_ALPHAFLIGHT,
+  ALPHAFLIGHT,
   /** Night Watch (6p-12m). */
-  SHIFT_NIGHTWATCH,
+  NIGHTWATCH,
   /** Zeta Shift (12m-6a). */
-  SHIFT_ZETASHIFT,
+  ZETASHIFT,
   /** Omega Shift (whatever's left over). */
-  SHIFT_OMEGASHIFT,
+  OMEGASHIFT,
   /** Invalid shift, should only happen at boot time. */
-  SHIFT_INVALID = -1
+  INVALID = -1
 };
 
 /**
@@ -29,19 +29,30 @@ enum class Shift {
  */
 enum class IdleType {
   /** Lights should be off entirely during idle. */
-  IDLE_OFF,
+  OFF,
   /** Lights should be on during idle, but shouldn't rotate. */
-  IDLE_STATIC,
+  STATIC,
   /**
    * Lights should be on during idle and should rotate slowly at the end of the
    * cycle.
    */
-  IDLE_SLOW,
+  SLOW,
   /**
   * Lights should be on during idle and should rotate not as slowly at the end
   * of the cycle.
   */
-  IDLE_FAST
+  FAST
+};
+
+enum class GroundEffects {
+  /** Ground effect lights are off. */
+  OFF,
+  /** Ground effects match the idle settings. */
+  MATCH_IDLE,
+  /** Use a slow pulsating effect for ground effects. */
+  PULSE,
+  /** Use clock-like chase lights for ground effects. */
+  CLOCK
 };
 
 #endif
