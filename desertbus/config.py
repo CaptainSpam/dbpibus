@@ -31,6 +31,8 @@ class ConfigKey(StrEnum):
     POINTS_CRASHES = 'PointsCrashes'
     # How the LEDs should fade when idle.
     IDLE_LED_FADE = 'IdleLedFade'
+    # How the ground effect lights should look.
+    GROUND_EFFECTS = 'GroundEffects'
 
 class ShiftAnim(StrEnum):
     """Options for SHOW_SHIFT_ANIM."""
@@ -98,6 +100,17 @@ class IdleLedFade(StrEnum):
     # The LEDs should rotate every minute, and the rotation should be fast.
     FAST = 'Fast'
 
+class GroundEffects(StrEnum):
+    """How the ground effects should look."""
+    # No ground effects at all.
+    OFF = 'Off'
+    # The ground effects should do whatever the cabin lights are doing.
+    MATCH_IDLE = 'MatchIdle'
+    # Chase lights on 1-second ticks.
+    CLOCK = 'Clock'
+    # Pulsating lights.
+    PULSE = 'Pulse'
+
 def _make_default_config():
     """Makes a new default config dict."""
     return {
@@ -111,6 +124,7 @@ def _make_default_config():
         ConfigKey.DATE_FORMAT: DateFormat.YYYYMMDD,
         ConfigKey.POINTS_CRASHES: PointsCrashes.SEPARATE,
         ConfigKey.IDLE_LED_FADE: IdleLedFade.SLOW,
+        ConfigKey.GROUND_EFFECTS: GroundEffects.MATCH_IDLE,
     }
 
 _current_config = None
@@ -148,6 +162,8 @@ def _validate_or_raise(key: ConfigKey, value: any):
             PointsCrashes(value)
         case ConfigKey.IDLE_LED_FADE:
             IdleLedFade(value)
+        case ConfigKey.GROUND_EFFECTS:
+            GroundEffects(value)
         case _:
             raise ValueError(f'Invalid key {key}')
 
@@ -212,6 +228,9 @@ def load_config():
 
             if not _validate(ConfigKey.IDLE_LED_FADE, new_config[ConfigKey.IDLE_LED_FADE]):
                 new_config[ConfigKey.IDLE_LED_FADE] = pristine_defaults[ConfigKey.IDLE_LED_FADE]
+
+            if not _validate(ConfigKey.GROUND_EFFECTS, new_config[ConfigKey.GROUND_EFFECTS]):
+                new_config[ConfigKey.GROUND_EFFECTS] = pristine_defaults[ConfigKey.GROUND_EFFECTS]
 
             # That's it!  Stash this away as our "real" version.
             _current_config = new_config

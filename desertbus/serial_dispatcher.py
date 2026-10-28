@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from desertbus.shift_data import Shift
-from desertbus.config import get_setting, ConfigKey, IdleLedFade
+from desertbus.config import get_setting, ConfigKey, IdleLedFade, GroundEffects
 import logging
 import serial
 
@@ -16,11 +16,17 @@ _COMMAND_SET_IDLE_ANIMATION = 'I'
 _COMMAND_UPDATE_CONFIG = 'U'
 
 _CONFIG_IDLE_TYPE = 't'
+_CONFIG_GROUND_EFFECTS = 'g'
 
 _IDLE_TYPE_OFF = '0'
 _IDLE_TYPE_STATIC = '1'
 _IDLE_TYPE_SLOW = '2'
 _IDLE_TYPE_FAST = '3'
+
+_GROUND_EFFECTS_OFF = '0'
+_GROUND_EFFECTS_MATCH_IDLE = '1'
+_GROUND_EFFECTS_PULSE = '2'
+_GROUND_EFFECTS_CLOCK = '3'
 
 _IDLE_ANIMATION_DAWNGUARD = '0'
 _IDLE_ANIMATION_ALPHAFLIGHT = '1'
@@ -79,6 +85,7 @@ def dispatch_config():
     logger.info('Dispatching all config data...')
     # There's just the one setting for now, but, y'know, still.
     change_idle_type(get_setting(ConfigKey.IDLE_LED_FADE))
+    change_ground_effects(get_setting(ConfigKey.GROUND_EFFECTS))
 
 def change_shift(shift: Shift):
     """Sends the command to change the current idle colors for the shift."""
@@ -109,6 +116,20 @@ def change_idle_type(fade: IdleLedFade):
             _dispatch(_COMMAND_UPDATE_CONFIG + _CONFIG_IDLE_TYPE + _IDLE_TYPE_FAST)
         case _:
             raise ValueError(f"Invalid value passed to change_idle_type(): {fade}")
+
+def change_ground_effects(effect: GroundEffects):
+    """Sends the command to change the ground effects."""
+    match(effect):
+        case GroundEffects.OFF:
+            _dispatch(_COMMAND_UPDATE_CONFIG + _CONFIG_GROUND_EFFECTS + _GROUND_EFFECTS_OFF)
+        case GroundEffects.MATCH_IDLE:
+            _dispatch(_COMMAND_UPDATE_CONFIG + _CONFIG_GROUND_EFFECTS + _GROUND_EFFECTS_MATCH_IDLE)
+        case GroundEffects.PULSE:
+            _dispatch(_COMMAND_UPDATE_CONFIG + _CONFIG_GROUND_EFFECTS + _GROUND_EFFECTS_PULSE)
+        case GroundEffects.CLOCK:
+            _dispatch(_COMMAND_UPDATE_CONFIG + _CONFIG_GROUND_EFFECTS + _GROUND_EFFECTS_CLOCK)
+        case _:
+            raise ValueError(f"Invalid value passed to change_ground_effects(): {effect}")
 
 def _dispatch(to_write):
     """Dispatches the given string to serial.  You probably want to wrap this in

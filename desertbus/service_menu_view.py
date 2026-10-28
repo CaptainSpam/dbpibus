@@ -11,7 +11,7 @@ from desertbus.simple_animation_view import SimpleAnimationView
 from desertbus.shift_data import Shift, make_view_for_shift
 from desertbus.event_data import Event, make_view_for_event
 import adafruit_character_lcd.character_lcd as characterlcd
-from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat, PointsCrashes, IdleLedFade
+from desertbus.config import load_config, get_setting, set_setting, ConfigKey, ShiftAnim, LcdColor, EventAnim, ShowTime, TimeFormat, DateFormat, PointsCrashes, IdleLedFade, GroundEffects
 import desertbus.serial_dispatcher as serial_dispatcher
 
 logger = logging.getLogger(__name__)
@@ -310,6 +310,18 @@ _NODE_STRUCTURE = {
                         { "title": "Fast", "value": IdleLedFade.FAST },
                     ],
                     "serial_func": serial_dispatcher.change_idle_type,
+                },
+                {
+                    "type": _NodeType.SETTING,
+                    "title": "Ground Effects",
+                    "key": ConfigKey.GROUND_EFFECTS,
+                    "options": [
+                        { "title": "Off", "value": GroundEffects.OFF },
+                        { "title": "Match Idle LEDs", "value": GroundEffects.MATCH_IDLE },
+                        { "title": "Pulse", "value": GroundEffects.PULSE },
+                        { "title": "Clock", "value": GroundEffects.CLOCK },
+                    ],
+                    "serial_func": serial_dispatcher.change_ground_effects,
                 },
                 {
                     "type": _NodeType.CONTAINER,

@@ -18,7 +18,7 @@ bool showing_lights = true;
 
 Shift current_idle = Shift::INVALID;
 IdleType idle_type = IdleType::SLOW;
-GroundEffects ground_effects = GroundEffects::CLOCK;
+GroundEffects ground_effects = GroundEffects::MATCH_IDLE;
 
 char current_command = ' ';
 char current_config = ' ';
@@ -124,10 +124,10 @@ void read_serial() {
       }
       case COMMAND_UPDATE_CONFIG: {
         if(current_config == ' ') {
-          // This should be the option being changed.  Right now there's only
-          // the one, but just to be sure...
+          // This should be the option being changed.
           switch(input) {
             case CONFIG_IDLE_TYPE:
+            case CONFIG_GROUND_EFFECTS:
               current_config = input;
               break;
             default:
@@ -154,6 +154,25 @@ void read_serial() {
                 break;
               case IDLE_TYPE_FAST:
                 idle_type = IdleType::FAST;
+                break;
+            }
+
+            reset_inputs();
+            break;
+          }
+          case CONFIG_GROUND_EFFECTS: {
+            switch(input) {
+              case GROUND_EFFECTS_OFF:
+                ground_effects = GroundEffects::OFF;
+                break;
+              case GROUND_EFFECTS_MATCH_IDLE:
+                ground_effects = GroundEffects::MATCH_IDLE;
+                break;
+              case GROUND_EFFECTS_CLOCK:
+                ground_effects = GroundEffects::CLOCK;
+                break;
+              case GROUND_EFFECTS_PULSE:
+                ground_effects = GroundEffects::PULSE;
                 break;
             }
 
