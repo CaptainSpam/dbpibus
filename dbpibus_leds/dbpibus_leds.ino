@@ -320,6 +320,25 @@ void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, I
       strip.setPixelColor(CABIN_LIGHT_COUNT + pos1, shift_colors[pos1 % IDLE_COLORS_ARR_LEN]);
     }
   }
+
+  if(ground_effects == GroundEffects::PULSE) {
+    // A pulsating light.  I think we can do this without globals!
+    int timing_millis = now_millis % (PULSE_CYCLE_TIME_MILLIS + PULSE_HOLD_TIME_MILLIS);
+
+    if(timing_millis >= PULSE_CYCLE_TIME_MILLIS) {
+      // We're past pulse time, hold steady with shift colors.
+      for(int i = CABIN_LIGHT_COUNT; i < NEOPIXEL_STRAND_LENGTH; i++) {
+        strip.setPixelColor(i, shift_colors[i % IDLE_COLORS_ARR_LEN]);
+      }
+    } else {
+      // We're somewhere in the middle of a pulse!
+      float amount = sin((timing_millis / (float)PULSE_CYCLE_TIME_MILLIS) * M_PI);
+
+      for(int i = CABIN_LIGHT_COUNT; i < NEOPIXEL_STRAND_LENGTH; i++) {
+        strip.setPixelColor(i, blend_colors(shift_colors[i % IDLE_COLORS_ARR_LEN], COLOR_OFF, amount));
+      }
+    }
+  }
 }
 
 void do_clock_lights(int pos1, int gap, const int *shift_colors, int shift_colors_size) {

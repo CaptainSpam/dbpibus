@@ -12,3 +12,8 @@ const int IDLE_CYCLE_TIME_MILLIS = 60000;
 const int IDLE_ROTATE_SLOW_TIME_MILLIS = 5000;
 // Time the idle animations take to rotate the lights in fast fade mode.
 const int IDLE_ROTATE_FAST_TIME_MILLIS = 1000;
+
+// Time a single pulse cycle takes.
+const int PULSE_CYCLE_TIME_MILLIS = 3000;
+// Time a pulse holds at full brightness before starting a new cycle.
+const int PULSE_HOLD_TIME_MILLIS = 10000;
