@@ -18,7 +18,7 @@ bool showing_lights = true;
 
 Shift current_idle = Shift::INVALID;
 IdleType idle_type = IdleType::SLOW;
-GroundEffects ground_effects = GroundEffects::MATCH_IDLE;
+GroundEffects ground_effects = GroundEffects::CLOCK;
 
 char current_command = ' ';
 char current_config = ' ';
@@ -216,8 +216,8 @@ bool do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) 
     return false;
   }
 
-  int shift_colors[4];
-  get_shift_colors(shift, shift_colors, 4);
+  int shift_colors[IDLE_COLORS_ARR_LEN];
+  get_shift_colors(shift, shift_colors, IDLE_COLORS_ARR_LEN);
 
   if(idle_type == IdleType::STATIC) {
     // Idle's static, so just fill it with the necessary colors.
@@ -248,8 +248,8 @@ void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, I
     return;
   }
 
-  int shift_colors[4];
-  get_shift_colors(shift, shift_colors, 4);
+  int shift_colors[IDLE_COLORS_ARR_LEN];
+  get_shift_colors(shift, shift_colors, IDLE_COLORS_ARR_LEN);
 
   if(ground_effects == GroundEffects::MATCH_IDLE) {
     // In MATCH_IDLE mode, we basically repeat most of the logic for idle.
@@ -271,6 +271,47 @@ void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, I
       do_blended_lights(CABIN_LIGHT_COUNT, NEOPIXEL_STRAND_LENGTH - 1, now_millis, shift_colors, 4);
     }
   }
+
+  if(ground_effects == GroundEffects::CLOCK) {
+    // Tick-tock, Mister P. Jangles.  The number of lights in the chase should
+    // scale with the number of ground effect lights available.  First, clear
+    // everything.
+    strip.fill(COLOR_OFF, CABIN_LIGHT_COUNT, GROUND_EFFECTS_LIGHT_COUNT);
+
+    // We want a tick every second.  Fortunately, that's easy.
+    int pos1 = (now_millis / 1000) % GROUND_EFFECTS_LIGHT_COUNT;
+
+    if(GROUND_EFFECTS_LIGHT_COUNT < 8) {
+      // Anything less than 8 (or prime), just a single light.
+      strip.setPixelColor(CABIN_LIGHT_COUNT + pos1, shift_colors[pos1 % IDLE_COLORS_ARR_LEN]);
+    } else if(GROUND_EFFECTS_LIGHT_COUNT % 5 == 0) {
+      // If divisble by five, space them out by five spaces.
+      do_clock_lights(pos1, 5, shift_colors, IDLE_COLORS_ARR_LEN);
+    } else if(GROUND_EFFECTS_LIGHT_COUNT % 4 == 0) {
+      // For four, similar.
+      do_clock_lights(pos1, 4, shift_colors, IDLE_COLORS_ARR_LEN);
+    } else if(GROUND_EFFECTS_LIGHT_COUNT % 3 == 0) {
+      // Or three.
+      do_clock_lights(pos1, 3, shift_colors, IDLE_COLORS_ARR_LEN);
+    } else {
+      // If it's not divisible by 5, 4, or 3, assume it's a single.  I'm sure
+      // there's a more fanciful algorithm I can use to find an aesthetically
+      // pleasing divisor to use here, but I really don't expect there to be
+      // more than 12 ground effect lights in the first place.
+      strip.setPixelColor(CABIN_LIGHT_COUNT + pos1, shift_colors[pos1 % IDLE_COLORS_ARR_LEN]);
+    }
+  }
+}
+
+void do_clock_lights(int pos1, int gap, const int *shift_colors, int shift_colors_size) {
+  // TODO: Make this less global-variable-dependent?
+  strip.setPixelColor(CABIN_LIGHT_COUNT + pos1, shift_colors[pos1 % shift_colors_size]);
+
+  int pos_cur = pos1;
+  do {
+    pos_cur = (pos_cur + gap) % GROUND_EFFECTS_LIGHT_COUNT;
+    strip.setPixelColor(CABIN_LIGHT_COUNT + pos_cur, shift_colors[pos_cur % shift_colors_size]);
+  } while(pos_cur != pos1);
 }
 
 bool do_blended_lights(int start, int end, unsigned long now_millis, const int *colors, int color_size) {
