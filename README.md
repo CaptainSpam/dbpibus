@@ -8,5 +8,16 @@ Ultimately, this won't be very useful to anyone else unless they have a list of 
 
 - A Raspberry Pi Zero 2 W
 - Adafruit's RGB backlight negative LCD 16x2 + extras - RGB on black (https://adafru.it/399)
+- A Raspberry Pi Pico 2
+- Some amount of Adafruit Neopixels
 
-Later, there will also be LEDs and buttons, too, but the specifics are still up for debate.
+There are also be LEDs and buttons, too, but the specifics are still up for debate.  I'll inventory what I'm using eventually.
+
+The current structure of the repo:
+
+- `dbpibus.py` is what you launch on the Zero.  That starts up the LCD and data fetching.
+- `dbpibus.service` is a systemd service to launch `dbpibus.py` at boot time.
+- `desertbus/` contains the rest of the Python bits referenced from `dbpibus.py`.
+- `dbpibus_leds/` contains the Arduino C++ code for the Pico.
+
+There's obviously some Python modules and such needed, which I will document later, once I've got time.
