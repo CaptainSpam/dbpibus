@@ -2,6 +2,7 @@
 #include "serial_constants.h"
 #include "enum_constants.h"
 #include "idle.h"
+#include "events.h"
 
 int last_light = -1;
 bool showing_lights = true;
@@ -12,6 +13,9 @@ GroundEffects ground_effects = GroundEffects::MATCH_IDLE;
 
 char current_command = ' ';
 char current_config = ' ';
+
+unsigned long last_animation_began_millis = 0;
+EventAnimation current_animation = EventAnimation::INVALID;
 
 void setup() {
   // TODO: Remove the serial monitor?
@@ -41,10 +45,8 @@ void loop() {
   // Update all serial data as need be.
   read_serial();
 
-  // Update the lights for the idle version.
-  // TODO: Events take priority, so if there's one waiting, this should wait its
-  // turn.
-  do_idle_animation();
+  // Do any event animation, if one is available.  Otherwise, go with idle.
+  if(!do_event_animation(current_animation, now_millis, last_animation_began_millis))
     do_idle_animation(now_millis);
 }
 
