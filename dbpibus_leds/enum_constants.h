@@ -44,6 +44,7 @@ enum class IdleType {
   FAST
 };
 
+/** The type of ground effects to use. */
 enum class GroundEffects {
   /** Ground effect lights are off. */
   OFF,
@@ -53,6 +54,28 @@ enum class GroundEffects {
   PULSE,
   /** Use clock-like chase lights for ground effects. */
   CLOCK
+};
+
+/** Event animations.  Also includes shift transitions. */
+enum class EventAnimation {
+  /** Point get! */
+  POINT,
+  /** CRASH! */
+  CRASH,
+  /** Bus stop! */
+  BUS_STOP,
+  /** Bug splat! */
+  BUG_SPLAT,
+  /** Dawn Guard transition. */
+  DAWN_GUARD,
+  /** Alpha Flight transition. */
+  ALPHA_FLIGHT,
+  /** Night Watch transition. */
+  NIGHT_WATCH,
+  /** Zeta Shift transition. */
+  ZETA_SHIFT,
+  /** Omega Shift transition. */
+  OMEGA_SHIFT
 };
 
 #endif

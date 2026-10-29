@@ -60,4 +60,15 @@ const char EVENT_ANIMATION_CRASH = '1';
 const char EVENT_ANIMATION_BUS_STOP = '2';
 // Bug splat!
 const char EVENT_ANIMATION_BUG_SPLAT = '3';
+// Dawn Guard transition.
+const char EVENT_ANIMATION_DAWN_GUARD = '4';
+// Alpha Flight transition.
+const char EVENT_ANIMATION_ALPHA_FLIGHT = '5';
+// Night Watch transition.
+const char EVENT_ANIMATION_NIGHT_WATCH = '6';
+// Zeta Shift transition.
+const char EVENT_ANIMATION_ZETA_SHIFT = '7';
+// Omega Shift transition.
+const char EVENT_ANIMATION_OMEGA_SHIFT = '8';
+
 #endif
