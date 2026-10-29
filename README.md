@@ -11,7 +11,7 @@ Ultimately, this won't be very useful to anyone else unless they have a list of 
 - A Raspberry Pi Pico 2
 - Some amount of Adafruit Neopixels
 
-There are also be LEDs and buttons, too, but the specifics are still up for debate.  I'll inventory what I'm using eventually.
+There are also buttons, an IC, and a couple odd electrical components, too, but the specifics are still up for debate.  I'll inventory what I'm using eventually.
 
 The current structure of the repo:
 
