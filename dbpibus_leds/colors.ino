@@ -1,5 +1,6 @@
 #include <Adafruit_NeoPixel.h>
 
+#include "colors.h"
 #include "enum_constants.h"
 
 void get_shift_colors(Shift shift, int *arr, int size) {
