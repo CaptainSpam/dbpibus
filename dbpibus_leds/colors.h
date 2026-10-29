@@ -1,3 +1,6 @@
+#ifndef COLORS_H
+#define COLORS_H
+
 #include <Adafruit_NeoPixel.h>
 
 #include "enum_constants.h"
@@ -52,3 +55,5 @@ int blend_colors(int color_a, int color_b, float amount);
  * @param size the size of the array
  */
 void get_shift_colors(Shift shift, int *arr, int size);
+
+#endif

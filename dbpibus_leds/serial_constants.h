@@ -3,6 +3,9 @@
     Various useful serial communication constants.
 */
 
+#ifndef SERIAL_CONSTANTS_H
+#define SERIAL_CONSTANTS_H
+
 // Outgoing char to request config be re-sent.
 const char REQUEST_CONFIG = '?';
 
@@ -57,3 +60,4 @@ const char EVENT_ANIMATION_CRASH = '1';
 const char EVENT_ANIMATION_BUS_STOP = '2';
 // Bug splat!
 const char EVENT_ANIMATION_BUG_SPLAT = '3';
+#endif

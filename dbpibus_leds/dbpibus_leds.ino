@@ -239,7 +239,6 @@ void do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) 
   }
 }
 
-
 void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, IdleType idle_type, Shift shift) {
   if(shift == Shift::INVALID) {
     // If we don't have shift data yet, ignore it, just like in idle.
