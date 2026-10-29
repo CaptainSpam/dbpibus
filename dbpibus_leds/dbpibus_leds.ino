@@ -40,7 +40,8 @@ void setup() {
 
   // Then, ask for the config to be re-sent, if the Zero's awake at this point.
   // Realistically, the only way it won't is if this is a dev situation, as the
-  // it absolutely won't finish booting before the Pico starts running.
+  // Zero otherwise absolutely won't finish booting before the Pico starts
+  // running.
   request_config();
 }
 
@@ -197,42 +198,29 @@ void reset_inputs() {
   current_config = ' ';
 }
 
-// The time at which the last idle cycle began.  Used to track when we need to
-// start another color fade.
-unsigned long last_idle_cycle_began = 0;
-// How many cycles we've gone.  This is modulo'd to get the light order when we
-// aren't actively fading colors.
-int cycle_count = 0;
-
 void do_idle_animation() {
   unsigned long now_millis = millis();
 
-  bool advance_cycle = do_cabin_lights(now_millis, idle_type, current_idle);
+  do_cabin_lights(now_millis, idle_type, current_idle);
   do_ground_effects(now_millis, ground_effects, idle_type, current_idle);
 
   // Apply whatever just happened.
   strip.show();
-
-  // Finally, if we've completed the fade, reset the clock.
-  if(advance_cycle) {
-    last_idle_cycle_began = now_millis;
-    cycle_count++;
-  }
 }
 
-bool do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) {
+void do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) {
   if(shift == Shift::INVALID) {
     // If we don't have shift data yet, ignore it.  This will keep it in rainbow
     // mode until the first update hits, which will be a pretty good indicator
     // that data hasn't arrived.
-    return false;
+    return;
   }
 
   if(idle_type == IdleType::OFF) {
     // Idle's off, so turn off all the lights and ignore the rest of the
     // function.
     strip.fill(COLOR_OFF, 0, CABIN_LIGHT_COUNT);
-    return false;
+    return;
   }
 
   int shift_colors[IDLE_COLORS_ARR_LEN];
@@ -243,15 +231,12 @@ bool do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) 
     for(int i = 0; i < CABIN_LIGHT_COUNT; i++) {
       strip.setPixelColor(i, shift_colors[i % IDLE_COLORS_ARR_LEN]);
     }
-    return false;
+    return;
   }
 
   if(idle_type == IdleType::FAST || idle_type == IdleType::SLOW) {
-    return do_blended_lights(0, CABIN_LIGHT_COUNT - 1, now_millis, shift_colors, 4);
+    do_blended_lights(0, CABIN_LIGHT_COUNT - 1, now_millis, shift_colors, 4);
   }
-
-  // We shouldn't get here, but if we bottom out of the enum, return false.
-  return false;
 }
 
 
@@ -352,27 +337,29 @@ void do_clock_lights(int pos1, int gap, const int *shift_colors, int shift_color
   } while(pos_cur != pos1);
 }
 
-bool do_blended_lights(int start, int end, unsigned long now_millis, const int *colors, int color_size) {
-  unsigned long time_since_last_cycle = now_millis - last_idle_cycle_began;
+void do_blended_lights(int start, int end, unsigned long now_millis, const int *colors, int color_size) {
+  // Determine how long one single cycle takes.
+  int fade_time_millis = IDLE_ROTATE_SLOW_TIME_MILLIS;
+  if(idle_type == IdleType::FAST) fade_time_millis = IDLE_ROTATE_FAST_TIME_MILLIS;
+  int one_cycle_time_millis = IDLE_CYCLE_TIME_MILLIS + fade_time_millis;
 
-  if(time_since_last_cycle < IDLE_CYCLE_TIME_MILLIS) {
+  // Where are we in that cycle?
+  int time_in_cycle_millis = now_millis % one_cycle_time_millis;
+
+  // There's exactly color_size cycles before the configuration repeats.  Where
+  // are we in THAT cycle?
+  int cycle_count = (now_millis / one_cycle_time_millis) % color_size;
+
+  if(time_in_cycle_millis < IDLE_CYCLE_TIME_MILLIS) {
     // We're in the static part of the cycle.
     for(int i = start; i <= end; i++) {
       strip.setPixelColor(i, colors[(i + cycle_count) % color_size]);
     }
-    return false;
   } else {
-    // We're somewhere in the cycle.  Let's figure out how much.
-    int cycle_time = IDLE_ROTATE_SLOW_TIME_MILLIS;
-    if(idle_type == IdleType::FAST) cycle_time = IDLE_ROTATE_FAST_TIME_MILLIS;
-
-    // I hope these values are named clearly enough.
-    unsigned long this_fade_ends = last_idle_cycle_began + IDLE_CYCLE_TIME_MILLIS + cycle_time;
-
     // Calculate the percent of time that's passed since this fade began and how
     // long it should last.  This WILL likely wind up being over 1.0 eventually;
     // this is okay, as that'll hit the clamp.
-    float amount = (float)(cycle_time - (this_fade_ends - now_millis)) / (float)cycle_time;
+    float amount =  1.0 - ((fade_time_millis - (time_in_cycle_millis - IDLE_CYCLE_TIME_MILLIS)) / (float)fade_time_millis);
 
     // Then, build up a new array of blended colors.
     int faded_colors[4] = {
@@ -386,8 +373,5 @@ bool do_blended_lights(int start, int end, unsigned long now_millis, const int *
     for(int i = start; i <= end; i++) {
       strip.setPixelColor(i, faded_colors[(i + cycle_count) % IDLE_COLORS_ARR_LEN]);
     }
-
-    // Do we need to update the cycle count?  Let's find out!
-    return amount >= 1.0;
   }
 }
