@@ -3,7 +3,7 @@
 #include "colors.h"
 #include "enum_constants.h"
 
-void get_shift_colors(Shift shift, int *arr, int size) {
+void get_shift_colors(Shift shift, uint32_t *arr, int size) {
   // So my C/C++ is a bit rusty, which is why this is kinda jank, but I THINK
   // this is a reasonable way to populate an array using values from a choice of
   // five different arrays...
@@ -32,7 +32,7 @@ void get_shift_colors(Shift shift, int *arr, int size) {
   }
 }
 
-int blend_colors(int color_a, int color_b, float amount) {
+uint32_t blend_colors(uint32_t color_a, uint32_t color_b, float amount) {
   // CLAMP!
   if(amount < 0.0) amount = 0.0;
   if(amount > 1.0) amount = 1.0;

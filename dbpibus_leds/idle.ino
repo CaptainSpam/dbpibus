@@ -31,7 +31,7 @@ void do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) 
     return;
   }
 
-  int shift_colors[IDLE_COLORS_ARR_LEN];
+  uint32_t shift_colors[IDLE_COLORS_ARR_LEN];
   get_shift_colors(shift, shift_colors, IDLE_COLORS_ARR_LEN);
 
   if(idle_type == IdleType::STATIC) {
@@ -59,7 +59,7 @@ void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, I
     return;
   }
 
-  int shift_colors[IDLE_COLORS_ARR_LEN];
+  uint32_t shift_colors[IDLE_COLORS_ARR_LEN];
   get_shift_colors(shift, shift_colors, IDLE_COLORS_ARR_LEN);
 
   if(ground_effects == GroundEffects::MATCH_IDLE) {
@@ -133,7 +133,7 @@ void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, I
   }
 }
 
-void do_clock_lights(int pos1, int gap, const int *shift_colors, int shift_colors_size) {
+void do_clock_lights(int pos1, int gap, const uint32_t *shift_colors, int shift_colors_size) {
   // TODO: Make this less global-variable-dependent?
   strip.setPixelColor(CABIN_LIGHT_COUNT + pos1, shift_colors[pos1 % shift_colors_size]);
 
@@ -144,7 +144,7 @@ void do_clock_lights(int pos1, int gap, const int *shift_colors, int shift_color
   } while(pos_cur != pos1);
 }
 
-void do_blended_lights(int start, int end, unsigned long now_millis, const int *colors, int color_size) {
+void do_blended_lights(int start, int end, unsigned long now_millis, const uint32_t *colors, int color_size) {
   // Determine how long one single cycle takes.
   int fade_time_millis = IDLE_ROTATE_SLOW_TIME_MILLIS;
   if(idle_type == IdleType::FAST) fade_time_millis = IDLE_ROTATE_FAST_TIME_MILLIS;
@@ -169,7 +169,7 @@ void do_blended_lights(int start, int end, unsigned long now_millis, const int *
     float amount =  1.0 - ((fade_time_millis - (time_in_cycle_millis - IDLE_CYCLE_TIME_MILLIS)) / (float)fade_time_millis);
 
     // Then, build up a new array of blended colors.
-    int faded_colors[4] = {
+    uint32_t faded_colors[4] = {
       blend_colors(colors[0], colors[1], amount),
       blend_colors(colors[1], colors[2], amount),
       blend_colors(colors[2], colors[3], amount),
