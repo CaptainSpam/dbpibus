@@ -74,7 +74,7 @@ def _run_starts_in(data: VstData) -> str:
 
 def _time_date_page(data: VstData) -> str:
     # We don't have much space to work with here.
-    right_now = datetime.now(PACIFIC_ZONEINFO)
+    right_now = datetime.now()
 
     display_hour = right_now.hour
     ampm = ' '
