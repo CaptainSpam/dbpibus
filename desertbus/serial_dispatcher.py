@@ -12,6 +12,7 @@ _ser = None
 # These constants all match serial_constants.h on the Pico side of things.
 _REQUEST_CONFIG = '?'
 
+_COMMAND_STOP_EVENT = 'X'
 _COMMAND_SET_IDLE_ANIMATION = 'I'
 _COMMAND_UPDATE_CONFIG = 'U'
 
@@ -83,7 +84,7 @@ def handle_config_request(shift: Shift):
 def dispatch_config():
     """Dispatches all relevant config settings to serial."""
     logger.info('Dispatching all config data...')
-    # There's just the one setting for now, but, y'know, still.
+
     change_idle_type(get_setting(ConfigKey.IDLE_LED_FADE))
     change_ground_effects(get_setting(ConfigKey.GROUND_EFFECTS))
 
@@ -130,6 +131,10 @@ def change_ground_effects(effect: GroundEffects):
             _dispatch(_COMMAND_UPDATE_CONFIG + _CONFIG_GROUND_EFFECTS + _GROUND_EFFECTS_CLOCK)
         case _:
             raise ValueError(f"Invalid value passed to change_ground_effects(): {effect}")
+
+def stop_animation():
+    """Sends the command to stop any ongoing events and return to idle."""
+    _dispatch(_COMMAND_STOP_EVENT)
 
 def _dispatch(to_write):
     """Dispatches the given string to serial.  You probably want to wrap this in

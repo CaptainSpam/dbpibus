@@ -6,6 +6,7 @@ import time
 from collections import deque
 import adafruit_character_lcd.character_lcd as characterlcd
 from desertbus.button_handler import ButtonData
+import desertbus.serial_dispatcher as serial_dispatcher
 
 logger = logging.getLogger(__name__)
 
@@ -88,6 +89,7 @@ class SimpleAnimationView(BaseView):
         if len(anim_deque) == 0 or current_frame[1] is None or current_frame[2] is None:
             # If the deque is empty at this point or we've reached the None/None
             # sentinel value, we're done with the animation.
+            serial_dispatcher.stop_animation()
             return True
 
         # Display the frame!

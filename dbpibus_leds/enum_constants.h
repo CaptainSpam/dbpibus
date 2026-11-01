@@ -58,8 +58,8 @@ enum class GroundEffects {
 
 /** Event animations.  Also includes shift transitions. */
 enum class EventAnimation {
-  /** No animation has started yet. */
-  INVALID,
+  /** No animation is active. */
+  NONE,
   /** Point get! */
   POINT,
   /** CRASH! */

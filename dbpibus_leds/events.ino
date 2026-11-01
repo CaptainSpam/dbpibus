@@ -7,8 +7,8 @@
 #include "globals.h"
 
 bool do_event_animation(EventAnimation event, unsigned long now_millis, unsigned long last_animation_began_millis) {
-  if(event == EventAnimation::INVALID) {
-    // This should only come up before any event's been sent from the Zero.
+  if(event == EventAnimation::NONE) {
+    // If nothing's being animated, stop right away and return false.
     return false;
   }
 

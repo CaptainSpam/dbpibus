@@ -4,9 +4,6 @@
 #include "idle.h"
 #include "events.h"
 
-int last_light = -1;
-bool showing_lights = true;
-
 Shift current_idle = Shift::INVALID;
 IdleType idle_type = IdleType::SLOW;
 GroundEffects ground_effects = GroundEffects::MATCH_IDLE;
@@ -15,7 +12,7 @@ char current_command = ' ';
 char current_config = ' ';
 
 unsigned long last_animation_began_millis = 0;
-EventAnimation current_animation = EventAnimation::INVALID;
+EventAnimation current_animation = EventAnimation::NONE;
 
 void setup() {
   // TODO: Remove the serial monitor?
@@ -79,15 +76,20 @@ void read_serial() {
 
     // To that end, are we already in a command?  If not, this may be a command.
     if(current_command == ' ') {
-      // But is it a VALID command?  If so, store it and await the next char.
-      // If not, ignore it entirely.
       switch(input) {
-        case COMMAND_EVENT_ANIMATION:
         case COMMAND_STOP_EVENT:
+          // Stopping the current event is simple: Set the flag and wait.  It
+          // doesn't even need any additional parameters.  The loop will realize
+          // what's up and go back to idle.
+          current_animation = EventAnimation::NONE;
+          break;
+        case COMMAND_EVENT_ANIMATION:
         case COMMAND_SET_IDLE_ANIMATION:
         case COMMAND_UPDATE_CONFIG:
+          // Each of these require additional details in subsequent characters.
           current_command = input;
           break;
+        // If it's not a valid command, just ignore it.
       }
 
       return;
