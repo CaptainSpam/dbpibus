@@ -3,15 +3,15 @@
     Definitions of the idle animation functions.
 */
 
+#include "idle.h"
 #include "globals.h"
 #include "enum_constants.h"
 #include "value_constants.h"
 #include "colors.h"
 
-void do_idle_animation(unsigned long now_millis) {
-  do_cabin_lights(now_millis, idle_type, current_idle);
-  do_ground_effects(now_millis, ground_effects, idle_type, current_idle);
-
+void do_idle_animation(unsigned long now_millis, Shift shift, IdleType idle_type, GroundEffects ground_effects) {
+  do_cabin_lights(now_millis, idle_type, shift);
+  do_ground_effects(now_millis, ground_effects, idle_type, shift);
   // Apply whatever just happened.
   strip.show();
 }
@@ -43,7 +43,7 @@ void do_cabin_lights(unsigned long now_millis, IdleType idle_type, Shift shift) 
   }
 
   if(idle_type == IdleType::FAST || idle_type == IdleType::SLOW) {
-    do_blended_lights(0, CABIN_LIGHT_COUNT - 1, now_millis, shift_colors, 4);
+    do_blended_lights(0, CABIN_LIGHT_COUNT - 1, now_millis, idle_type, shift_colors, 4);
   }
 }
 
@@ -79,7 +79,7 @@ void do_ground_effects(unsigned long now_millis, GroundEffects ground_effects, I
     }
 
     if(idle_type == IdleType::FAST || idle_type == IdleType::SLOW) {
-      do_blended_lights(CABIN_LIGHT_COUNT, NEOPIXEL_STRAND_LENGTH - 1, now_millis, shift_colors, 4);
+      do_blended_lights(CABIN_LIGHT_COUNT, NEOPIXEL_STRAND_LENGTH - 1, now_millis, idle_type, shift_colors, 4);
     }
   }
 
@@ -144,7 +144,7 @@ void do_clock_lights(int pos1, int gap, const uint32_t *shift_colors, int shift_
   } while(pos_cur != pos1);
 }
 
-void do_blended_lights(int start, int end, unsigned long now_millis, const uint32_t *colors, int color_size) {
+void do_blended_lights(int start, int end, unsigned long now_millis, IdleType idle_type, const uint32_t *colors, int color_size) {
   // Determine how long one single cycle takes.
   int fade_time_millis = IDLE_ROTATE_SLOW_TIME_MILLIS;
   if(idle_type == IdleType::FAST) fade_time_millis = IDLE_ROTATE_FAST_TIME_MILLIS;

@@ -1,10 +1,10 @@
-#include "globals.h"
-#include "serial_constants.h"
-#include "enum_constants.h"
-#include "idle.h"
-#include "events.h"
+#include "src/globals.h"
+#include "src/serial_constants.h"
+#include "src/enum_constants.h"
+#include "src/idle.h"
+#include "src/events.h"
 
-Shift current_idle = Shift::INVALID;
+Shift shift = Shift::INVALID;
 IdleType idle_type = IdleType::SLOW;
 GroundEffects ground_effects = GroundEffects::MATCH_IDLE;
 
@@ -44,7 +44,7 @@ void loop() {
 
   // Do any event animation, if one is available.  Otherwise, go with idle.
   if(!do_event_animation(current_animation, now_millis, last_animation_began_millis))
-    do_idle_animation(now_millis);
+    do_idle_animation(now_millis, shift, idle_type, ground_effects);
 }
 
 void request_config() {
@@ -100,19 +100,19 @@ void read_serial() {
       case COMMAND_SET_IDLE_ANIMATION: {
         switch(input) {
           case IDLE_ANIMATION_DAWNGUARD:
-            current_idle = Shift::DAWNGUARD;
+            shift = Shift::DAWNGUARD;
             break;
           case IDLE_ANIMATION_ALPHAFLIGHT:
-            current_idle = Shift::ALPHAFLIGHT;
+            shift = Shift::ALPHAFLIGHT;
             break;
           case IDLE_ANIMATION_NIGHTWATCH:
-            current_idle = Shift::NIGHTWATCH;
+            shift = Shift::NIGHTWATCH;
             break;
           case IDLE_ANIMATION_ZETASHIFT:
-            current_idle = Shift::ZETASHIFT;
+            shift = Shift::ZETASHIFT;
             break;
           case IDLE_ANIMATION_OMEGASHIFT:
-            current_idle = Shift::OMEGASHIFT;
+            shift = Shift::OMEGASHIFT;
             break;
         }
 

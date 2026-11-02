@@ -3,17 +3,17 @@
     Global stuff.
 */
 
+#include <Adafruit_NeoPixel.h>
+
 #ifndef GLOBALS_H
 #define GLOBALS_H
-
-#include <Adafruit_NeoPixel.h>
 
 /** The Pico pin the NeoPixel strand is using for data. */
 const int NEOPIXEL_PIN = 16;
 /** The number of lights in the NeoPixel strand.  Change as necessary. */
 const int NEOPIXEL_STRAND_LENGTH = 20;
 /** The NeoPixel strip object. */
-Adafruit_NeoPixel strip(NEOPIXEL_STRAND_LENGTH, NEOPIXEL_PIN);
+extern Adafruit_NeoPixel strip;
 
 /**
  * Number of lights in the cabin of the bus.  Anything past this is assumed to
