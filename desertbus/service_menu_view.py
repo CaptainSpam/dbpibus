@@ -239,7 +239,7 @@ def _inflate_node(node: dict) -> _MenuNode:
                 title = node["title"],
                 key = node["key"],
                 options = node["options"],
-                serial_func = node["serial_func"]
+                serial_func = node.get("serial_func", None)
             )
         case _NodeType.TESTS:
             return _TestNode(
